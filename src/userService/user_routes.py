@@ -1,5 +1,12 @@
 from flask import Blueprint, request, jsonify, current_app
-from user_utils import get_user, create_user
+import sys
+import os
+
+# Bad practice but tests won't work without it because Python Modules
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+from userService.user_utils import get_user, create_user
 from firebase_admin import auth
 
 user_bp = Blueprint('user_routes', __name__)

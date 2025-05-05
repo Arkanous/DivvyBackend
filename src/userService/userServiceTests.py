@@ -1,13 +1,18 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import firebase_admin
-from firebase_admin import credentials, firestore, auth  # Import auth
-import google.cloud.firestore # Import google.cloud.firestore
+from firebase_admin import credentials, firestore, auth 
+import google.cloud.firestore
+from flask import Flask
+import sys
+import os
 
-# Assuming your user_routes.py and utils/user_utils.py are in the same directory
-# as your test file, or adjust the import paths accordingly.
-from user_routes import (user_bp, get_user_route, create_user_route)
-from user_utils import (get_user, create_user)
+# Bad practice but tests won't work without it because Python Modules
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+from userService.user_routes import (user_bp, get_user_route, create_user_route)
+from userService.user_utils import (get_user, create_user)
 
 
 class TestUserService(unittest.TestCase):
@@ -37,8 +42,10 @@ class TestUserService(unittest.TestCase):
         self.mock_document_snapshot = MagicMock()
         self.mock_document.get.return_value = self.mock_document_snapshot
 
-        self.app = MagicMock()
-        self.app.config = {'FIRESTORE_DB': self.mock_db}
+        self.app = Flask(__name__)
+        self.app.config['FIRESTORE_DB'] = self.mock_db
+        self.app_context = self.app.app_context() 
+        self.app_context.push()
         self.request_context = MagicMock()
 
         self.mock_auth = MagicMock()
@@ -142,7 +149,7 @@ class TestUserService(unittest.TestCase):
         mock_auth_user.uid = 'new_user_id'
         self.mock_auth.create_user.return_value = mock_auth_user
 
-        with patch('user_utils.create_user', return_value=True):
+        with patch('src.userService.user_utils.create_user', return_value=True):
             with self.app.test_request_context(
                 '/users',
                 method='POST',
@@ -188,7 +195,7 @@ class TestUserService(unittest.TestCase):
         mock_auth_user = MagicMock()
         mock_auth_user.uid = 'new_user_id'
         self.mock_auth.create_user.return_value = mock_auth_user
-        with patch('user_utils.create_user', return_value=False):
+        with patch('src.userService.user_utils.create_user', return_value=False):
             with self.app.test_request_context(
                 '/users',
                 method='POST',
@@ -206,7 +213,7 @@ class TestUserService(unittest.TestCase):
         mock_auth_user = MagicMock()
         mock_auth_user.uid = 'new_user_id'
         self.mock_auth.create_user.return_value = mock_auth_user
-        with patch('user_utils.create_user', return_value=False):
+        with patch('src.userService.user_utils.create_user', return_value=False):
             self.mock_auth.delete_user.side_effect = Exception("Delete error")
             with self.app.test_request_context(
                 '/users',

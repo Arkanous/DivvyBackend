@@ -6,7 +6,13 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
+import sys
+import os
 
+# Bad practice but tests won't work without it because Python Modules
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 from userService.user_utils import get_user 
 from house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
 from house_utils import (

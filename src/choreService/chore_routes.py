@@ -2,7 +2,7 @@ import sys
 # Adding userService and utils
 sys.path.append('../')
 from flask import Blueprint, request, jsonify, current_app
-from chore_utils import (
+from choreService.chore_utils import (
     create_chore,
     generate_chore_instances,
     get_chore_instances_by_user,
@@ -10,6 +10,13 @@ from chore_utils import (
     update_chore_instance,
     get_chores_by_house,
 )
+import sys
+import os
+
+# Bad practice but tests won't work without it because Python Modules
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 from userService.user_utils import get_user
 from utils.firebase_utils import get_firestore_db
 from datetime import datetime

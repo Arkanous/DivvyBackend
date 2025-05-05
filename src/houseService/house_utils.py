@@ -1,4 +1,3 @@
-# houseService/house_utils.py
 from firebase_admin import firestore
 
 def create_house(db, house_name, creator_user_id):

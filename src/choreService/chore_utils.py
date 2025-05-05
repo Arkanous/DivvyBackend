@@ -1,4 +1,3 @@
-# utils/chore_utils.py
 from firebase_admin import firestore
 from datetime import datetime
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY

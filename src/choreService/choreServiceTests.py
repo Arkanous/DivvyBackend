@@ -6,9 +6,17 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
+import sys
+import os
+
+# Bad practice but tests won't work without it because Python Modules
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from userService.user_utils import get_user
-from chore_routes import (chore_bp, create_chore_route, create_chore, get_chore_instances_by_user_route, generate_chore_instances_route)
-from chore_utils import (
+from choreService.chore_routes import (chore_bp, create_chore_route, create_chore, get_chore_instances_by_user_route, generate_chore_instances_route)
+from choreService.chore_utils import (
     create_chore,
     generate_chore_instances,
     get_chore_instances_by_user,
@@ -16,6 +24,7 @@ from chore_utils import (
     update_chore_instance,
     get_chores_by_house,
 )
+from flask import Flask
 
 
 class TestChoreService(unittest.TestCase):
@@ -45,8 +54,10 @@ class TestChoreService(unittest.TestCase):
         self.mock_document_snapshot = MagicMock()
         self.mock_document.get.return_value = self.mock_document_snapshot
 
-        self.app = MagicMock()
-        self.app.config = {'FIRESTORE_DB': self.mock_db}
+        self.app = Flask(__name__)
+        self.app.config['FIRESTORE_DB'] = self.mock_db
+        self.app_context = self.app.app_context() 
+        self.app_context.push()
         self.request_context = MagicMock()
 
         self.mock_auth = MagicMock()
@@ -54,7 +65,7 @@ class TestChoreService(unittest.TestCase):
         self.auth_patch.start()
 
         self.mock_get_user = MagicMock()
-        self.get_user_patch = patch('userService.user_utils.get_user', self.mock_get_user)
+        self.get_user_patch = patch('src.userService.user_utils.get_user', self.mock_get_user)
         self.get_user_patch.start()
 
     def tearDown(self):
@@ -461,7 +472,7 @@ class TestChoreService(unittest.TestCase):
             {'chore_id': 'chore1', 'date': datetime(2024, 1, 15)},
             {'chore_id': 'chore2', 'date': datetime(2024, 1, 20)},
         ]
-        with patch('chore_utils.get_chore_instances_by_user', return_value=mock_get_chore_instances_by_user_result):
+        with patch('src.choreService.chore_utils.get_chore_instances_by_user', return_value=mock_get_chore_instances_by_user_result):
             with self.app.test_request_context('/chores/user/user123/instances?start_date=2024-01-01&end_date=2024-01-31', method='GET'):
                 response = get_chore_instances_by_user_route('user123')
                 self.assertEqual(response.status_code, 200)

@@ -3,27 +3,17 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime, timedelta
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY
 import firebase_admin
-from firebase_admin import credentials, firestore, auth  # Import firestore
+from firebase_admin import credentials, firestore, auth 
+from flask import Flask
+
+import sys
 import os
 
-# Assuming your firebase_utils.py is in the same directory as your test file.
-# If not, you'll need to adjust the import path.
-from firebase_utils import (
-    #initialize_firebase,
-    get_firestore_db,
-    # create_house,
-    # get_house,
-    # add_member_to_house,
-    # get_houses_by_user,
-    # get_user,
-    # create_user,
-    # create_chore,
-    # generate_chore_instances,
-    # get_chore_instances_by_user,
-    # get_chore_instance,
-    # update_chore_instance,
-    # get_chores_by_house,
-)
+# Bad practice but tests won't work without it because Python Modules
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+from utils.firebase_utils import get_firestore_db
 
 class TestFirebaseUtils(unittest.TestCase):
     """
@@ -39,22 +29,13 @@ class TestFirebaseUtils(unittest.TestCase):
         self.mock_initialize_app = self.initialize_app_patch.start()
 
         self.mock_firestore_client = MagicMock()
-        self.mock_db = MagicMock()
-        self.mock_firestore_client.return_value = self.mock_db
 
-        self.firestore_client_patch = patch('google.cloud.firestore.Client')
-        self.firestore_client_patch.start().return_value = self.mock_firestore_client
+        self.firestore_client_patch = patch('firebase_admin.firestore.client', return_value=self.mock_firestore_client)
+        self.mock_firestore_client_instance = self.firestore_client_patch.start()
 
-        self.mock_collection = MagicMock()
-        self.mock_document = MagicMock()
-        self.mock_db.collection.return_value = self.mock_collection
-        self.mock_collection.document.return_value = self.mock_document
-
-        self.mock_document_snapshot = MagicMock()
-        self.mock_document.get.return_value = self.mock_document_snapshot
-
-        self.app = MagicMock()
-        self.app.config = {'FIRESTORE_DB': self.mock_db}
+        self.app = Flask(__name__)
+        self.app_context = self.app.app_context()
+        self.app_context.push()
         self.request_context = MagicMock()
 
         self.mock_auth = MagicMock()
@@ -62,7 +43,7 @@ class TestFirebaseUtils(unittest.TestCase):
         self.auth_patch.start()
 
         # store the patched functions, and unpatch them in tearDown
-        self.get_firestore_db_patch = patch('firebase_utils.get_firestore_db', return_value=self.mock_firestore_client)
+        self.get_firestore_db_patch = patch('src.utils.firebase_utils.get_firestore_db', return_value=self.mock_firestore_client)
         self.get_firestore_db_patch.start()
 
     def tearDown(self):
