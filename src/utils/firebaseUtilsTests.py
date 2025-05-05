@@ -3,26 +3,26 @@ from unittest.mock import MagicMock, patch
 from datetime import datetime, timedelta
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY
 import firebase_admin
-from firebase_admin import credentials, firestore  # Import firestore
+from firebase_admin import credentials, firestore, auth  # Import firestore
 import os
 
 # Assuming your firebase_utils.py is in the same directory as your test file.
 # If not, you'll need to adjust the import path.
-from utils import (
-    initialize_firebase,
+from firebase_utils import (
+    #initialize_firebase,
     get_firestore_db,
-    create_house,
-    get_house,
-    add_member_to_house,
-    get_houses_by_user,
-    get_user,
-    create_user,
-    create_chore,
-    generate_chore_instances,
-    get_chore_instances_by_user,
-    get_chore_instance,
-    update_chore_instance,
-    get_chores_by_house,
+    # create_house,
+    # get_house,
+    # add_member_to_house,
+    # get_houses_by_user,
+    # get_user,
+    # create_user,
+    # create_chore,
+    # generate_chore_instances,
+    # get_chore_instances_by_user,
+    # get_chore_instance,
+    # update_chore_instance,
+    # get_chores_by_house,
 )
 
 class TestFirebaseUtils(unittest.TestCase):
@@ -62,7 +62,7 @@ class TestFirebaseUtils(unittest.TestCase):
         self.auth_patch.start()
 
         # store the patched functions, and unpatch them in tearDown
-        self.get_firestore_db_patch = patch('utils.firebase_utils.get_firestore_db', return_value=self.mock_firestore_client)
+        self.get_firestore_db_patch = patch('firebase_utils.get_firestore_db', return_value=self.mock_firestore_client)
         self.get_firestore_db_patch.start()
 
     def tearDown(self):
@@ -89,3 +89,6 @@ class TestFirebaseUtils(unittest.TestCase):
         with patch('firebase_admin._apps', []):
             db = get_firestore_db()
             self.assertIsNone(db)
+
+if __name__ == "__main__":
+     unittest.main()

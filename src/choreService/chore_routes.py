@@ -1,5 +1,8 @@
+import sys 
+# Adding userService and utils
+sys.path.append('../')
 from flask import Blueprint, request, jsonify, current_app
-from choreService.chore_utils import (
+from chore_utils import (
     create_chore,
     generate_chore_instances,
     get_chore_instances_by_user,

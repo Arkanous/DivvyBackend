@@ -1,11 +1,14 @@
+import sys 
+# Adding userService and utils
+sys.path.append('../')
 import unittest
 from unittest.mock import MagicMock, patch
 from datetime import datetime
 import firebase_admin
-from firebase_admin import credentials, firestore
-
-from choreService.chore_routes import (chore_bp, create_chore_route, create_chore, get_chore_instances_by_user_route, generate_chore_instances_route)
-from choreService.chore_utils import (
+from firebase_admin import credentials, firestore, auth
+from userService.user_utils import get_user
+from chore_routes import (chore_bp, create_chore_route, create_chore, get_chore_instances_by_user_route, generate_chore_instances_route)
+from chore_utils import (
     create_chore,
     generate_chore_instances,
     get_chore_instances_by_user,
@@ -51,7 +54,7 @@ class TestChoreService(unittest.TestCase):
         self.auth_patch.start()
 
         self.mock_get_user = MagicMock()
-        self.get_user_patch = patch('choreService.chore_utils.get_user', self.mock_get_user)
+        self.get_user_patch = patch('userService.user_utils.get_user', self.mock_get_user)
         self.get_user_patch.start()
 
     def tearDown(self):
@@ -458,7 +461,7 @@ class TestChoreService(unittest.TestCase):
             {'chore_id': 'chore1', 'date': datetime(2024, 1, 15)},
             {'chore_id': 'chore2', 'date': datetime(2024, 1, 20)},
         ]
-        with patch('utils.chore_utils.get_chore_instances_by_user', return_value=mock_get_chore_instances_by_user_result):
+        with patch('chore_utils.get_chore_instances_by_user', return_value=mock_get_chore_instances_by_user_result):
             with self.app.test_request_context('/chores/user/user123/instances?start_date=2024-01-01&end_date=2024-01-31', method='GET'):
                 response = get_chore_instances_by_user_route('user123')
                 self.assertEqual(response.status_code, 200)
@@ -484,3 +487,6 @@ class TestChoreService(unittest.TestCase):
             response = get_chore_instances_by_user_route('user123')
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.get_json(), {'error': 'Invalid date format.  Use %Y-%m-%d'})
+
+if __name__ == '__main__':
+    unittest.main()

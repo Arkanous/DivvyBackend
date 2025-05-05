@@ -1,5 +1,8 @@
+import sys 
+# Adding userService and utils
+sys.path.append('../')
 from flask import Blueprint, request, jsonify, current_app
-from houseService import create_house, get_house, add_member_to_house, get_houses_by_user 
+from house_utils import create_house, get_house, add_member_to_house, get_houses_by_user 
 from userService.user_utils import get_user 
 from utils.firebase_utils import get_firestore_db
 

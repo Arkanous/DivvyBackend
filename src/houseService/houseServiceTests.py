@@ -1,16 +1,21 @@
+import sys 
+# Adding userService and utils
+sys.path.append('../')
 import unittest
 from unittest.mock import MagicMock, patch
 from datetime import datetime
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, auth
 
-from houseService.house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
-from src.houseService.house_utils import (
+from userService.user_utils import get_user 
+from house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
+from house_utils import (
     create_house,
     get_house,
     add_member_to_house,
     get_houses_by_user,
 )
+
 
 class TestHouseService(unittest.TestCase):
     """
@@ -48,7 +53,7 @@ class TestHouseService(unittest.TestCase):
         self.auth_patch.start()
 
         self.mock_get_user = MagicMock()
-        self.get_user_patch = patch('houseService.house_utils.get_user', self.mock_get_user)
+        self.get_user_patch = patch('userService.user_utils.get_user', self.mock_get_user)
         self.get_user_patch.start()
 
     def tearDown(self):
@@ -57,6 +62,7 @@ class TestHouseService(unittest.TestCase):
         """
         self.initialize_app_patch.stop()
         self.firestore_client_patch.stop()
+        self.auth_patch.stop()
         self.get_user_patch.stop()
 
     def test_create_house_success(self):
@@ -338,7 +344,7 @@ class TestHouseService(unittest.TestCase):
         Test successful retrieval of houses by user via the route.
         """
         mock_get_houses_by_user_result = [{'house_id': 'house1', 'name': 'House 1'}, {'house_id': 'house2', 'name': 'House 2'}]
-        with patch('utils.house_utils.get_houses_by_user', return_value=mock_get_houses_by_user_result):
+        with patch('house_utils.get_houses_by_user', return_value=mock_get_houses_by_user_result):
             self.mock_get_user.return_value = {'user_id': 'user123'} 
             with self.app.test_request_context('/houses/user/user123', method='GET'):
                 response = get_houses_by_user_route('user123')
@@ -359,7 +365,7 @@ class TestHouseService(unittest.TestCase):
         """
         Test exception during retrieval of houses by user via the route.
         """
-        with patch('utils.house_utils.get_houses_by_user', side_effect=Exception('Simulated error')):
+        with patch('house_utils.get_houses_by_user', side_effect=Exception('Simulated error')):
             self.mock_get_user.return_value = {'user_id': 'user123'}
             with self.app.test_request_context('/houses/user/user123', method='GET'):
                 response = get_houses_by_user_route('user123')

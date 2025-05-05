@@ -142,7 +142,7 @@ class TestUserService(unittest.TestCase):
         mock_auth_user.uid = 'new_user_id'
         self.mock_auth.create_user.return_value = mock_auth_user
 
-        with patch('utils.user_utils.create_user', return_value=True):
+        with patch('user_utils.create_user', return_value=True):
             with self.app.test_request_context(
                 '/users',
                 method='POST',
@@ -188,7 +188,7 @@ class TestUserService(unittest.TestCase):
         mock_auth_user = MagicMock()
         mock_auth_user.uid = 'new_user_id'
         self.mock_auth.create_user.return_value = mock_auth_user
-        with patch('utils.user_utils.create_user', return_value=False):
+        with patch('user_utils.create_user', return_value=False):
             with self.app.test_request_context(
                 '/users',
                 method='POST',
@@ -206,7 +206,7 @@ class TestUserService(unittest.TestCase):
         mock_auth_user = MagicMock()
         mock_auth_user.uid = 'new_user_id'
         self.mock_auth.create_user.return_value = mock_auth_user
-        with patch('utils.user_utils.create_user', return_value=False):
+        with patch('user_utils.create_user', return_value=False):
             self.mock_auth.delete_user.side_effect = Exception("Delete error")
             with self.app.test_request_context(
                 '/users',
@@ -218,5 +218,5 @@ class TestUserService(unittest.TestCase):
                 self.assertEqual(response.get_json(), {'error': 'User creation failed in Firestore'})
                 self.mock_auth.delete_user.assert_called_once_with('new_user_id')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
      unittest.main()
