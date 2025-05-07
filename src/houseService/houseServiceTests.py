@@ -14,6 +14,11 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 from userService.user_utils import get_user 
+# Lines needed for Aiden's local version
+# from src.houseService.house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
+# from src.houseService.house_utils import (
+
+# Lines needed for Tony's local version
 from house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
 from house_utils import (
     create_house,
@@ -104,6 +109,19 @@ class TestHouseService(unittest.TestCase):
         self.assertEqual(result, {'name': 'Test House', 'members': ['user123']})
         self.mock_collection.document.assert_called_once_with('house123')
         self.mock_document.get.assert_called_once()
+
+    def test_get_multiple_houses_success(self):
+        """
+        Test retrieval of multiple houses.
+        """
+        self.mock_document_snapshot.exists = True
+        self.mock_document_snapshot.to_dict.return_value = {'name': 'Test House 1', 'members': ['user1']}
+        result = get_house(self.mock_db, 'Test House 1')
+        self.assertEqual(result, {'name': 'Test House 1', 'members': ['user1']})
+        self.mock_collection.document.assert_called_once_with('Test House 1')
+        self.mock_document_snapshot.to_dict.return_value = {'name': 'Test House 2', 'members': ['user2']}
+        result = get_house(self.mock_db, 'Test House 2')
+        self.assertEqual(result, {'name': 'Test House 2', 'members': ['user2']})
 
     def test_get_house_not_found(self):
         """

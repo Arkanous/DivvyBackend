@@ -9,6 +9,10 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
+# Lines needed for Aiden's local version
+# from src.houseService.house_utils import create_house, get_house, add_member_to_house, get_houses_by_user 
+
+# Lines needed for Tony's local version
 from house_utils import create_house, get_house, add_member_to_house, get_houses_by_user 
 from userService.user_utils import get_user 
 from utils.firebase_utils import get_firestore_db
