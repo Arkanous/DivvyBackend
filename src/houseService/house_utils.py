@@ -79,25 +79,25 @@ def add_member_to_house(HOUSES, house_id, user_id):
 #         print(f"Error adding member to house: {e}")
 #         return False
 
-# def get_houses_by_user(db, user_id):
-#     """
-#     Retrieves all houses a user is a member of
+def get_houses_by_user(db, user_id):
+    """
+    Retrieves all houses a user is a member of
 
-#     Args:
-#         db (firestore.Client): the Firestore Client
-#         user_id (str): the id of the user
+    Args:
+        db (firestore.Client): the Firestore Client
+        user_id (str): the id of the user
 
-#     Returns:
-#         list(dict): A list of house dictionaries
-#     """
-#     try:
-#         houses = []
-#         houses_ref = db.collection('houses')
-#         query = houses_ref.where('members', 'array_contains', user_id)
-#         results = query.get()
-#         for house in results:
-#             houses.append(house.to_dict())
-#         return houses
-#     except Exception as e:
-#         print(f"Error getting houses for user {user_id}: {e}")
-#         return []
+    Returns:
+        list(dict): A list of house dictionaries
+    """
+    try:
+        houses = []
+        houses_ref = db.collection('houses')
+        query = houses_ref.where('members', 'array_contains', user_id)
+        results = query.get()
+        for house in results:
+            houses.append(house.to_dict())
+        return houses
+    except Exception as e:
+        print(f"Error getting houses for user {user_id}: {e}")
+        return []

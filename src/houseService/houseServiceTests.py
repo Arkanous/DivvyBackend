@@ -19,8 +19,8 @@ from userService.user_utils import get_user
 # from src.houseService.house_utils import (
 
 # Lines needed for Tony's local version
-from house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
-from house_utils import (
+from houseService.house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
+from houseService.house_utils import (
     create_house,
     get_house,
     add_member_to_house,
