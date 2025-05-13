@@ -4,20 +4,20 @@ from firebase_admin import firestore
 
 def create_house(HOUSES, data):
     try:
-        house_id = data.get('house_id')
-        house_name = data.get('house_name')
-        creator_user_id = data.get('creator_user_id')
+        house_id = data.get('id')
+        house_name = data.get('name')
+        members = data.get('members')
+        dateCreated = data.get('dateCreated')
+        imageID = data.get('imageID')
+        joinCode = data.get('joinCode')
 
-        if not house_id or not house_name or not creator_user_id:
-            return jsonify({'error': 'House ID and name, and creator user ID are required'}), 400
+        # if not house_id or not house_name or not creator_user_id:
+        #     return jsonify({'error': 'House ID and name, and creator user ID are required'}), 400
 
         HOUSES.document(house_id).set(data)
         return jsonify({"success": True}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
-
-
-
 
 def get_house(HOUSES, house_id):
     """
