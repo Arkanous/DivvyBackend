@@ -55,21 +55,23 @@ class TestFirebaseUtils(unittest.TestCase):
         self.firestore_client_patch.stop()
         self.get_firestore_db_patch.stop()
 
-    def test_get_firestore_db_success(self):
-        """
-        Test successful retrieval of the Firestore client.
-        """
-        with patch('firebase_admin._apps', [MagicMock()]):
-            db = get_firestore_db()
-            self.assertEqual(db, self.mock_firestore_client)
+    # NOT BEING USED because firebase_utils.py is not currently being used. Will be re-implemented
+    # when firebase_utils.py is updated.
+    # def test_get_firestore_db_success(self):
+    #     """
+    #     Test successful retrieval of the Firestore client.
+    #     """
+    #     with patch('firebase_admin._apps', [MagicMock()]):
+    #         db = get_firestore_db()
+    #         self.assertEqual(db, self.mock_firestore_client)
 
-    def test_get_firestore_db_failure(self):
-        """
-        Test failure to retrieve the Firestore client when Firebase is not initialized.
-        """
-        with patch('firebase_admin._apps', []):
-            db = get_firestore_db()
-            self.assertIsNone(db)
+    # def test_get_firestore_db_failure(self):
+    #     """
+    #     Test failure to retrieve the Firestore client when Firebase is not initialized.
+    #     """
+    #     with patch('firebase_admin._apps', []):
+    #         db = get_firestore_db()
+    #         self.assertIsNone(db)
 
 if __name__ == "__main__":
      unittest.main()

@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import os
 
+# NOT CURRENTLY BEING USED. Modify to work with the new implementation of app.py
 def get_firestore_db():
     """
     Retrieves the Firestore database client.
