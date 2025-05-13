@@ -69,7 +69,7 @@ The application requires a Firebase Admin SDK service account credentials file.
 1.  **Run the Flask application:** (Without env)
 
     ```bash
-    python app.py
+    python ./src/app.py
     ```
 
     This will start the Flask development server, and your API will be accessible at `http://0.0.0.0:5000`.
