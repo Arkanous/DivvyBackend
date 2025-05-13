@@ -99,7 +99,7 @@ The application includes unit tests. Here's how to run them:
     pip install pytest
     ```
 
-2.  **Run the tests:**
+2.  **Run the tests:** (do this from ./src/) Test files are found inside the choreService, userService, houseService, and utils folders.
 
     ```bash
     python -m pytest [path to test]
@@ -142,6 +142,7 @@ Here's how to debug the application using Visual Studio Code:
 4.  **Start debugging:** Press the green "Start Debugging" button (or press F5). VS Code will run the tests, and when it hits your breakpoint, the execution will pause, allowing you to inspect variables and step through the code.
 
 ## API Endpoints
+**NOTE: Not all endpoints are fully implemented yet. Please consult app.py to see which routes are currently implemented.**
 
 ### User Service Endpoints
 
