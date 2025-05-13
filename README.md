@@ -99,7 +99,7 @@ The application includes unit tests. Here's how to run them:
     pip install pytest
     ```
 
-2.  **Run the tests:**
+2.  **Run the tests:** (do this from ./src/) Test files are found inside the choreService, userService, houseService, and utils folders.
 
     ```bash
     python -m pytest [path to test]
