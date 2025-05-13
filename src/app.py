@@ -69,6 +69,7 @@ def get_house_route(house_id):
 #         If the user ID does not exist in the database, returns None.
 #     """
 #     USERS = db.collection('users')
+#
     
 
 
