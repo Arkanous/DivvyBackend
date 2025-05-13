@@ -43,7 +43,7 @@ def home():
 @app.route('/add-house', methods=['POST'])
 def create_house_route():
     """
-        Creates a new house in the database's house collection.
+        Creates a new house in the database's houses collection.
         Request body example:
             {'house_id': '1',
                 'house_name': 'New House',
@@ -57,10 +57,20 @@ def create_house_route():
 @app.route('/get-house-<house_id>', methods=['GET'])
 def get_house_route(house_id):
     """
-        Retrieves a house document from the database's house collection.
+        Retrieves a house document from the database's houses collection.
         If the ID does not exist in the database, returns None.
     """
     return get_house(db, house_id)
+
+# @app.route('/get-user-s-house-<user_id>', methods='GET')
+# def get_user_s_house_route(user_id):
+#     """
+#         Retrieves a user's house from the database's users collection.
+#         If the user ID does not exist in the database, returns None.
+#     """
+#     USERS = db.collection('users')
+    
+
 
 # /// END Public Routes /// #
 
