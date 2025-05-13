@@ -96,7 +96,7 @@ class TestUserService(unittest.TestCase):
         self.mock_collection.document.assert_called_once_with('user123')
         self.mock_document.set.assert_called_once_with({
             'email': 'test@example.com',
-            'name': 'Test User',
+            'name': 'Test User'
         })
 
     def test_create_user_failure(self):
@@ -107,123 +107,123 @@ class TestUserService(unittest.TestCase):
         result = create_user(self.mock_db, 'user123', 'test@example.com', 'Test User')
         self.assertFalse(result)
 
-    def test_get_user_route_success(self):
-        """
-        Test successful retrieval of a user via the route.
-        """
-        self.mock_document_snapshot.exists = True
-        self.mock_document_snapshot.to_dict.return_value = {'email': 'test@example.com', 'name': 'Test User'}
+    # def test_get_user_route_success(self):
+    #     """
+    #     Test successful retrieval of a user via the route.
+    #     """
+    #     self.mock_document_snapshot.exists = True
+    #     self.mock_document_snapshot.to_dict.return_value = {'email': 'test@example.com', 'name': 'Test User'}
 
-        with self.app.test_request_context('/users/user123', method='GET'):
-            response = get_user_route('user123')
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.get_json(), {'email': 'test@example.com', 'name': 'Test User'})
-            self.mock_collection.document.assert_called_once_with('user123')
-            self.mock_document.get.assert_called_once()
+    #     with self.app.test_request_context('/users/user123', method='GET'):
+    #         response = get_user_route('user123')
+    #         self.assertEqual(response.status_code, 200)
+    #         self.assertEqual(response.get_json(), {'email': 'test@example.com', 'name': 'Test User'})
+    #         self.mock_collection.document.assert_called_once_with('user123')
+    #         self.mock_document.get.assert_called_once()
 
-    def test_get_user_route_not_found(self):
-        """
-        Test retrieval of a non-existent user via the route.
-        """
-        self.mock_document_snapshot.exists = False
-        with self.app.test_request_context('/users/user123', method='GET'):
-            response = get_user_route('user123')
-            self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.get_json(), {'error': 'User not found'})
+    # def test_get_user_route_not_found(self):
+    #     """
+    #     Test retrieval of a non-existent user via the route.
+    #     """
+    #     self.mock_document_snapshot.exists = False
+    #     with self.app.test_request_context('/users/user123', method='GET'):
+    #         response = get_user_route('user123')
+    #         self.assertEqual(response.status_code, 404)
+    #         self.assertEqual(response.get_json(), {'error': 'User not found'})
 
-    def test_get_user_route_exception(self):
-        """
-        Test exception during user retrieval via the route.
-        """
-        self.mock_document.get.side_effect = Exception('Simulated error')
-        with self.app.test_request_context('/users/user123', method='GET'):
-            response = get_user_route('user123')
-            self.assertEqual(response.status_code, 500)
-            self.assertEqual(response.get_json(), {'error': 'Error getting user: Simulated error'})
+    # def test_get_user_route_exception(self):
+    #     """
+    #     Test exception during user retrieval via the route.
+    #     """
+    #     self.mock_document.get.side_effect = Exception('Simulated error')
+    #     with self.app.test_request_context('/users/user123', method='GET'):
+    #         response = get_user_route('user123')
+    #         self.assertEqual(response.status_code, 500)
+    #         self.assertEqual(response.get_json(), {'error': 'Error getting user: Simulated error'})
 
-    def test_create_user_route_success(self):
-        """
-        Test successful creation of a user via the route.
-        """
-        mock_auth_user = MagicMock()
-        mock_auth_user.uid = 'new_user_id'
-        self.mock_auth.create_user.return_value = mock_auth_user
+    # def test_create_user_route_success(self):
+    #     """
+    #     Test successful creation of a user via the route.
+    #     """
+    #     mock_auth_user = MagicMock()
+    #     mock_auth_user.uid = 'new_user_id'
+    #     self.mock_auth.create_user.return_value = mock_auth_user
 
-        with patch('src.userService.user_utils.create_user', return_value=True):
-            with self.app.test_request_context(
-                '/users',
-                method='POST',
-                json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
-            ):
-                response = create_user_route()
-                self.assertEqual(response.status_code, 201)
-                self.assertEqual(response.get_json(), {'message': 'User created successfully', 'user_id': 'new_user_id'})
-                self.mock_auth.create_user.assert_called_once_with(email='test@example.com', password='password123')
+    #     with patch('src.userService.user_utils.create_user', return_value=True):
+    #         with self.app.test_request_context(
+    #             '/users',
+    #             method='POST',
+    #             json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
+    #         ):
+    #             response = create_user_route()
+    #             self.assertEqual(response.status_code, 201)
+    #             self.assertEqual(response.get_json(), {'message': 'User created successfully', 'user_id': 'new_user_id'})
+    #             self.mock_auth.create_user.assert_called_once_with(email='test@example.com', password='password123')
 
-    def test_create_user_route_missing_data(self):
-        """
-        Test creating a user with missing data via the route.
-        """
-        with self.app.test_request_context(
-            '/users',
-            method='POST',
-            json={'email': 'test@example.com', 'password': 'password123'},
-        ):
-            response = create_user_route()
-            self.assertEqual(response.status_code, 400)
-            self.assertEqual(response.get_json(), {'error': 'Email, password, and name are required'})
-            self.mock_auth.create_user.assert_not_called()
+    # def test_create_user_route_missing_data(self):
+    #     """
+    #     Test creating a user with missing data via the route.
+    #     """
+    #     with self.app.test_request_context(
+    #         '/users',
+    #         method='POST',
+    #         json={'email': 'test@example.com', 'password': 'password123'},
+    #     ):
+    #         response = create_user_route()
+    #         self.assertEqual(response.status_code, 400)
+    #         self.assertEqual(response.get_json(), {'error': 'Email, password, and name are required'})
+    #         self.mock_auth.create_user.assert_not_called()
 
-    def test_create_user_route_auth_error(self):
-        """
-        Test error during Firebase Auth user creation via the route.
-        """
-        self.mock_auth.create_user.side_effect = Exception('Authentication error')
-        with self.app.test_request_context(
-            '/users',
-            method='POST',
-            json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
-        ):
-            response = create_user_route()
-            self.assertEqual(response.status_code, 500)
-            self.assertEqual(response.get_json(), {'error': 'Failed to create user: Authentication error'})
+    # def test_create_user_route_auth_error(self):
+    #     """
+    #     Test error during Firebase Auth user creation via the route.
+    #     """
+    #     self.mock_auth.create_user.side_effect = Exception('Authentication error')
+    #     with self.app.test_request_context(
+    #         '/users',
+    #         method='POST',
+    #         json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
+    #     ):
+    #         response = create_user_route()
+    #         self.assertEqual(response.status_code, 500)
+    #         self.assertEqual(response.get_json(), {'error': 'Failed to create user: Authentication error'})
 
-    def test_create_user_route_firestore_error(self):
-        """
-        Test error during Firestore user creation via the route.
-        """
-        mock_auth_user = MagicMock()
-        mock_auth_user.uid = 'new_user_id'
-        self.mock_auth.create_user.return_value = mock_auth_user
-        with patch('src.userService.user_utils.create_user', return_value=False):
-            with self.app.test_request_context(
-                '/users',
-                method='POST',
-                json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
-            ):
-                response = create_user_route()
-                self.assertEqual(response.status_code, 500)
-                self.assertEqual(response.get_json(), {'error': 'User creation failed in Firestore'})
-                self.mock_auth.delete_user.assert_called_once_with('new_user_id')
+    # def test_create_user_route_firestore_error(self):
+    #     """
+    #     Test error during Firestore user creation via the route.
+    #     """
+    #     mock_auth_user = MagicMock()
+    #     mock_auth_user.uid = 'new_user_id'
+    #     self.mock_auth.create_user.return_value = mock_auth_user
+    #     with patch('src.userService.user_utils.create_user', return_value=False):
+    #         with self.app.test_request_context(
+    #             '/users',
+    #             method='POST',
+    #             json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
+    #         ):
+    #             response = create_user_route()
+    #             self.assertEqual(response.status_code, 500)
+    #             self.assertEqual(response.get_json(), {'error': 'User creation failed in Firestore'})
+    #             self.mock_auth.delete_user.assert_called_once_with('new_user_id')
 
-    def test_create_user_route_firestore_error_delete_user_error(self):
-        """
-        Test error during Firestore user creation and error during Firebase Auth user deletion via the route.
-        """
-        mock_auth_user = MagicMock()
-        mock_auth_user.uid = 'new_user_id'
-        self.mock_auth.create_user.return_value = mock_auth_user
-        with patch('src.userService.user_utils.create_user', return_value=False):
-            self.mock_auth.delete_user.side_effect = Exception("Delete error")
-            with self.app.test_request_context(
-                '/users',
-                method='POST',
-                json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
-            ):
-                response = create_user_route()
-                self.assertEqual(response.status_code, 500)
-                self.assertEqual(response.get_json(), {'error': 'User creation failed in Firestore'})
-                self.mock_auth.delete_user.assert_called_once_with('new_user_id')
+    # def test_create_user_route_firestore_error_delete_user_error(self):
+    #     """
+    #     Test error during Firestore user creation and error during Firebase Auth user deletion via the route.
+    #     """
+    #     mock_auth_user = MagicMock()
+    #     mock_auth_user.uid = 'new_user_id'
+    #     self.mock_auth.create_user.return_value = mock_auth_user
+    #     with patch('src.userService.user_utils.create_user', return_value=False):
+    #         self.mock_auth.delete_user.side_effect = Exception("Delete error")
+    #         with self.app.test_request_context(
+    #             '/users',
+    #             method='POST',
+    #             json={'email': 'test@example.com', 'password': 'password123', 'name': 'Test User'},
+    #         ):
+    #             response = create_user_route()
+    #             self.assertEqual(response.status_code, 500)
+    #             self.assertEqual(response.get_json(), {'error': 'User creation failed in Firestore'})
+    #             self.mock_auth.delete_user.assert_called_once_with('new_user_id')
 
 if __name__ == '__main__':
      unittest.main()

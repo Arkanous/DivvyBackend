@@ -44,8 +44,7 @@ def create_user(db, user_id, email, name):
         user_ref = db.collection('users').document(user_id)
         user_data = {
             'email': email,
-            'name': name,
-            'join_date': firestore.SERVER_TIMESTAMP,
+            'name': name
             # TODO: other fields and stuff
         }
         user_ref.set(user_data)
