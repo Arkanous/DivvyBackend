@@ -368,22 +368,22 @@ Here's how to debug the application using Visual Studio Code:
         }
         ```
 * `GET /chore/house/<house_id>`
-        * Retrieves all chores for a given house.
-        * Example: `curl http://0.0.0.0:5000/chore/house/house123`
-        * Response:
-            ```json
-            [
-                {
-                    "chore_id": "chore1",
-                    "description": "Clean the bathroom",
-                    "assigned_to": ["user1", "user2"],
-                    // ... other chore properties
-                },
-                {
-                    "chore_id": "chore2",
-                    "description": "Take out the trash",
-                    "assigned_to": ["user3"],
-                    // ... other chore properties
-                }
-            ]
-            ```
+    * Retrieves all chores for a given house.
+    * Example: `curl http://0.0.0.0:5000/chore/house/house123`
+    * Response:
+        ```json
+        [
+            {
+                "chore_id": "chore1",
+                "description": "Clean the bathroom",
+                "assigned_to": ["user1", "user2"],
+                // ... other chore properties
+            },
+            {
+                "chore_id": "chore2",
+                "description": "Take out the trash",
+                "assigned_to": ["user3"],
+                // ... other chore properties
+            }
+        ]
+        ```
