@@ -1,0 +1,7 @@
+Flask==3.0.0
+Flask-RESTful==0.3.11
+firebase-admin==6.2.0
+google-cloud-firestore==2.11.0
+pytest==8.1.1
+Werkzeug==3.0.1
+requests==2.31.0
