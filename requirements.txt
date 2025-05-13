@@ -7,3 +7,4 @@ Werkzeug==3.0.1
 requests==2.31.0
 flask_cors==5.0.1
 python-dateutil==2.9.0
+dotenv==1.1.0
