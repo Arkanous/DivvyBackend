@@ -37,5 +37,5 @@ jobs:
     - name: Test with pytest
       run: |
         cd ./src/
-        python -m pytest .\houseService\houseServiceTests.py
+        python -m pytest ./houseService/houseServiceTests.py
         cd ..
