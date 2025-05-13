@@ -1,4 +1,4 @@
-Flask==3.0.0
+Flask==3.0.10
 Flask-RESTful==0.3.11
 firebase-admin==6.2.0
 google-cloud-firestore==2.11.0
