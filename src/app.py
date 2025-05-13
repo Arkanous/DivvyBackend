@@ -52,7 +52,7 @@ def create_house_route():
         overwritten.
     """
     data = request.get_json()
-    return create_house(HOUSES, data)
+    return create_house(db, data)
 
 @app.route('/get-house-<house_id>', methods=['GET'])
 def get_house_route(house_id):
@@ -60,7 +60,7 @@ def get_house_route(house_id):
         Retrieves a house document from the database's house collection.
         If the ID does not exist in the database, returns None.
     """
-    return get_house(HOUSES, house_id)
+    return get_house(db, house_id)
 
 # /// END Public Routes /// #
 
