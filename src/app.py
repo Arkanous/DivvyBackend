@@ -7,8 +7,9 @@ from datetime import timedelta
 import os
 import sys
 from dotenv import load_dotenv
-
 from flask_cors import CORS
+
+from houseService.house_utils import create_house, get_house
 
 # Load .env file variables
 load_dotenv()
@@ -50,37 +51,16 @@ def create_house_route():
         If house_id already exists in the database, its data will be
         overwritten.
     """
-    try:
-        data = request.get_json()
-        house_id = data.get('house_id')
-        house_name = data.get('house_name')
-        creator_user_id = data.get('creator_user_id')
-
-        if not house_id or not house_name or not creator_user_id:
-            return jsonify({'error': 'House ID and name, and creator user ID are required'}), 400
-
-        HOUSES.document(house_id).set(request.json)
-        return jsonify({"success": True}), 200
-    except Exception as e:
-        return f"An Error Occured: {e}"
+    data = request.get_json()
+    return create_house(HOUSES, data)
 
 @app.route('/get-house-<house_id>', methods=['GET'])
 def get_house_route(house_id):
     """
         Retrieves a house document from the database's house collection.
-        Request body example:
-            {'house_id': '1'}
-        If the ID does not exist in the database, returns a house_id of -1.
+        If the ID does not exist in the database, returns None.
     """
-    try:     
-        doc_ref = HOUSES.document(house_id)
-        doc = doc_ref.get()
-        if doc.exists:
-            return jsonify(doc.to_dict())
-        else:
-            return jsonify({"house_id": "-1"})
-    except Exception as e:
-        return f"An Error Occured: {e}"
+    return get_house(HOUSES, house_id)
 
 # /// END Public Routes /// #
 
