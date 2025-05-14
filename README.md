@@ -48,6 +48,8 @@ Before you begin, ensure you have the following installed:
 
 ## Configuration
 
+**NOTE: Please skip this section for now. It is not necessary in the current release version.**
+
 The application requires a Firebase Admin SDK service account credentials file.
 
 1.  **Obtain Firebase Admin SDK credentials:**
