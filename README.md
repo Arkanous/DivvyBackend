@@ -79,6 +79,7 @@ The application requires a Firebase Admin SDK service account credentials file.
 
 1.  **Please see the frontend repository for instructions on setting up the frontend:** https://github.com/sonyaouthred/Divvy
 2.  Tests for the backend will work just fine without the frontend, and you can still use curl to access endpoints, but if you would like to run the full app, you will obviously need the frontend.
+3.  Note that with the current release, the Flask server and the frontend need to be running on the same machine. This will change. See the next step for how to start the server.
 
 ## Running the System
 
@@ -166,7 +167,17 @@ Here's how to debug the application using Visual Studio Code:
 
 ## API Endpoints
 
-**NOTE: Not all endpoints are fully implemented yet. Please consult app.py to see which routes are currently implemented.**
+**NOTE: Not all endpoints are fully implemented yet. Please consult app.py to see documentation for the routes that are currently implemented. Below is a list of those endpoints:**
+
+- `POST /add-house`
+- `GET /get-house-<house_id>`
+- `GET /get-user-<user_id>`
+- `GET /get-house-<house_id>-chores`
+- `GET /get-house-<house_id>-chore-instances`
+- `GET /get-house-<house_id>-members`
+- `GET /get-house-<house_id>-subgroups`
+
+**NOTE: Endpoints past this point may not be fully implemented. The documentation is left here for when they are implemented.**
 
 ### User Service Endpoints
 
