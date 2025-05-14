@@ -125,6 +125,21 @@ def get_house_members_routes(house_id):
 
     return members_list
 
+@app.route('/get-house-<house_id>-subgroups', methods=['GET'])
+def get_house_subgroups_routes(house_id):
+    """
+        Retrieves a house's subgroups collection.
+        Returns None if house_id is not in the database.
+    """
+    house_ref = HOUSES.document(house_id)
+    subgroups = house_ref.collection('subgroups').stream()
+    subgroups_list = {
+
+    }
+    for subgroup in subgroups:
+        subgroups_list[subgroup.id] = subgroup.to_dict()
+
+    return subgroups_list
 
 # /// END Public Routes /// #
 
