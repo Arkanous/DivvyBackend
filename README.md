@@ -70,6 +70,7 @@ The application requires a Firebase Admin SDK service account credentials file.
 ## Setting up the Frontend
 1.  **Please see the frontend repository for instructions on setting up the frontend:** https://github.com/sonyaouthred/Divvy
 2.  Tests for the backend will work just fine without the frontend, and you can still use curl to access endpoints, but if you would like to run the full app, you will obviously need the frontend.
+3.  Note that with the current release, the Flask server and the frontend need to be running on the same machine. This will change. See the next step for how to start the server.
 
 ## Running the System 
 
