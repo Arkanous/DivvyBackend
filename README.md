@@ -150,7 +150,16 @@ Here's how to debug the application using Visual Studio Code:
 4.  **Start debugging:** Press the green "Start Debugging" button (or press F5). VS Code will run the tests, and when it hits your breakpoint, the execution will pause, allowing you to inspect variables and step through the code.
 
 ## API Endpoints
-**NOTE: Not all endpoints are fully implemented yet. Please consult app.py to see which routes are currently implemented.**
+**NOTE: Not all endpoints are fully implemented yet. Please consult app.py to see documentation for the routes that are currently implemented. Below is a list of those endpoints:**
+* `POST /add-house`
+* `GET /get-house-<house_id>`
+* `GET /get-user-<user_id>`
+* `GET /get-house-<house_id>-chores`
+* `GET /get-house-<house_id>-chore-instances`
+* `GET /get-house-<house_id>-members`
+* `GET /get-house-<house_id>-subgroups`
+
+**NOTE: Endpoints past this point may not be fully implemented. The documentation is left here for when they are implemented.**
 
 ### User Service Endpoints
 
