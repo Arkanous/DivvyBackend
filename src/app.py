@@ -92,7 +92,22 @@ def get_house_chores_route(house_id):
         chore_list[chore.id] = chore.to_dict()
 
     return chore_list
-    
+
+@app.route('/get-house-<house_id>-chore-instances', methods=['GET'])
+def get_house_chore_instances_routes(house_id):
+    """
+        Retrieves a house's chore instances collection.
+        Returns None if house_id is not in the database.
+    """
+    house_ref = HOUSES.document(house_id)
+    choreInstances = house_ref.collection('choreInstances').stream()
+    chore_instance_list = {
+
+    }
+    for instance in choreInstances:
+        chore_instance_list[instance.id] = instance.to_dict()
+
+    return chore_instance_list
 
 
 # /// END Public Routes /// #
