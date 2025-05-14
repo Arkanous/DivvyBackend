@@ -11,8 +11,8 @@ This is the backend service for Divvy, a chore division application. It's built 
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
 * [Configuration](#configuration)
-* [Running the System](#running-the-system)
 * [Setting up the Frontend](#setting-up-the-frontend)
+* [Running the System](#running-the-system)
 * [Running as a Regular Flask App](#running-as-a-regular-flask-app)
 * [Testing](#testing)
 * [Debugging](#debugging)
@@ -67,6 +67,10 @@ The application requires a Firebase Admin SDK service account credentials file.
     set GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your\serviceAccountKey.json"
     ```
 
+## Setting up the Frontend
+1.  **Please see the frontend repository for instructions on setting up the frontend:** https://github.com/sonyaouthred/Divvy
+2.  Tests for the backend will work just fine without the frontend, and you can still use curl to access endpoints, but if you would like to run the full app, you will obviously need the frontend.
+
 ## Running the System 
 
 1.  **Run the Flask application:** (Without env)
@@ -77,10 +81,6 @@ The application requires a Firebase Admin SDK service account credentials file.
     ```
 
     This will start the Flask development server, and your API will be accessible at `http://0.0.0.0:5000`.
-
-## Setting up the Frontend
-1.  **Please see the frontend repository for instructions on setting up the frontend:** https://github.com/sonyaouthred/Divvy
-2.  Tests for the backend will work just fine without the frontend, and you can still use curl to access endpoints, but if you would like to run the full app, you will obviously need the frontend.
 
 ## Running as a Regular Flask App (In case the first one doesnt work)
 
