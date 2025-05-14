@@ -62,14 +62,36 @@ def get_house_route(house_id):
     """
     return get_house(db, house_id)
 
-# @app.route('/get-user-s-house-<user_id>', methods='GET')
-# def get_user_s_house_route(user_id):
-#     """
-#         Retrieves a user's house from the database's users collection.
-#         If the user ID does not exist in the database, returns None.
-#     """
-#     USERS = db.collection('users')
-#
+@app.route('/get-user-<user_id>', methods=['GET'])
+def get_user_route(user_id):
+    """
+        Retrieves a user's house from the database's users collection.
+        If the user ID does not exist in the database, returns None.
+    """
+    USERS = db.collection('users')
+    user_ref = USERS.document(user_id)
+    user = user_ref.get()
+    if user.exists:
+        return user.to_dict()
+    else:
+        print(f"User with ID {user_id} not found.")
+        return None
+
+@app.route('/get-house-<house_id>-chores', methods=['GET'])
+def get_house_chores_route(house_id):
+    """
+        Retrieves a house's chores collection.
+        Returns None if house_id is not in the database.
+    """
+    house_ref = HOUSES.document(house_id)
+    chores = house_ref.collection('chores').stream()
+    chore_list = {
+
+    }
+    for chore in chores:
+        chore_list[chore.id] = chore.to_dict()
+
+    return chore_list
     
 
 
