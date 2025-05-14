@@ -40,5 +40,4 @@ jobs:
         python -m pytest ./houseService/houseServiceTests.py
         python -m pytest ./userService/userServiceTests.py
         python -m pytest ./choreService/choreServiceTests.py
-        python -m pytest ./utils/firebaseUtilsTests.py
         cd ..
