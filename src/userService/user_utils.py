@@ -25,7 +25,7 @@ def get_user(db, user_id):
         print(f"Error getting user: {e}")
         return None
 
-def create_user(db, data):
+def upsert_user(db, data):
     try:
         user_ref = USERS.document(id)
         user = user_ref.get()

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 
 from houseService.house_utils import create_house, get_house
-from userService.user_utils import create_user
+from userService.user_utils import upsert_user
 
 # Load .env file variables
 load_dotenv()
@@ -41,10 +41,12 @@ HOUSES = db.collection('houses')
 def home():
     return "Hello, Divvy App Gateway!"
 
-@app.route('/create-user', methods=['POST'])
-def create_user_route():
+@app.route('/upsert-user', methods=['POST'])
+def upsert_user_route():
     """
         Creates a new user in the database's user collection.
+        If the user already exists, then non-empty fields will be
+        updated instead.
         Request body example:
             {'email': 'example@gmail.com',
                 'houseID': 'alskdjfl',
@@ -53,7 +55,7 @@ def create_user_route():
         overwritten.
     """
     data = request.get_json()
-    return create_user(db, data)
+    return upsert_user(db, data)
 
 @app.route('/add-house', methods=['POST'])
 def create_house_route():
