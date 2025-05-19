@@ -25,30 +25,33 @@ def get_user(db, user_id):
         print(f"Error getting user: {e}")
         return None
 
-def create_user(db, user_id, email, name):
-    """
-    Creates a new user document in the 'users' collection.  This is in *addition*
-    to the user created by Firebase Authentication.  You'll need to do this
-    after a user successfully signs up via Firebase Auth.
-
-    Args:
-        db (firestore.Client): The Firestore client.
-        user_id (str): The unique ID of the user (from Firebase Auth).
-        email (str): The user's email address.
-        name (str): The user's name.
-
-    Returns:
-        bool: True on success, False on error.
-    """
+def create_user(db, data):
     try:
-        user_ref = db.collection('users').document(user_id)
+        user_ref = USERS.document(id)
+        user = user_ref.get()
+        USERS = db.collection('users')
+        user_dict = {}
+        if (user.exists):
+            user_dict = user.to_dict()
+
+        email = data.get('email')
+        if (user.exists and email == ''):
+            email = user_dict['email']
+        houseID = data.get('houseID')
+        if (user.exists and houseID == ''):
+            houseID = user_dict['houseID']
+        id = data.get('id')
+        if (user.exists and id == ''):
+            id = user_dict['id']
+        
         user_data = {
             'email': email,
-            'name': name
-            # TODO: other fields and stuff
+            'houseID': houseID,
+            'id': id
         }
+
         user_ref.set(user_data)
-        return True
+        return id
     except Exception as e:
         print(f"Error creating user: {e}")
-        return False
+        return None
