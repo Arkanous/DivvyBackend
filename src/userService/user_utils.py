@@ -27,9 +27,10 @@ def get_user(db, user_id):
 
 def upsert_user(db, data):
     try:
-        user_ref = USERS.document(id)
-        user = user_ref.get()
+        print("Upserting user...")
         USERS = db.collection('users')
+        user_ref = USERS.document(data.get('id'))
+        user = user_ref.get()
         user_dict = {}
         if (user.exists):
             user_dict = user.to_dict()
@@ -40,6 +41,7 @@ def upsert_user(db, data):
         houseID = data.get('houseID')
         if (user.exists and houseID == ''):
             houseID = user_dict['houseID']
+        print("Assigned id...")
         id = data.get('id')
         if (user.exists and id == ''):
             id = user_dict['id']
@@ -50,6 +52,7 @@ def upsert_user(db, data):
             'id': id
         }
 
+        print("Setting user data...")
         user_ref.set(user_data)
         return id
     except Exception as e:

@@ -47,6 +47,7 @@ def upsert_user_route():
         Creates a new user in the database's user collection.
         If the user already exists, then non-empty fields will be
         updated instead.
+        The id field must be non-empty.
         Request body example:
             {'email': 'example@gmail.com',
                 'houseID': 'alskdjfl',
