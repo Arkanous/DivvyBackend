@@ -58,6 +58,21 @@ def upsert_user_route():
     data = request.get_json()
     return upsert_user(db, data)
 
+@app.route('/delete-user-<user_id>', methods=['POST'])
+def delete_user_route(user_id):
+    """
+        Deletes a user in the database's user collection.
+        The id field must be non-empty.
+        Request body example:
+            {'email': 'example@gmail.com',
+                'houseID': 'alskdjfl',
+                'id': 'NisesS}
+    """
+    USERS = db.collection('users')
+    user_ref = USERS.document(user_id)
+    user_ref.delete()
+    return user_id
+
 @app.route('/add-house', methods=['POST'])
 def create_house_route():
     """
@@ -92,8 +107,7 @@ def get_user_route(user_id):
     if user.exists:
         return user.to_dict()
     else:
-        print(f"User with ID {user_id} not found.")
-        return None
+        return jsonify({'error': 'User with ID {user_id} not found'}), 400
 
 @app.route('/get-house-<house_id>-chores', methods=['GET'])
 def get_house_chores_route(house_id):
