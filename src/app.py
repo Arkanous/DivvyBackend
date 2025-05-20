@@ -11,7 +11,7 @@ from flask_cors import CORS
 
 from houseService.house_utils import create_house, get_house
 from userService.user_utils import upsert_user
-from choreService.chore_utils import upsert_chore
+from choreService.chore_utils import upsert_chore, upsert_chore_instance
 
 # Load .env file variables
 load_dotenv()
@@ -42,8 +42,30 @@ HOUSES = db.collection('houses')
 def home():
     return "Hello, Divvy App Gateway!"
 
+@app.route('/upsert-chore-instance', methods=['POST'])
+def upsert_chore_instance_route():
+    """
+        Creates a new chore instance under a house in the database's
+        house collection. If the chore instance already exists, then
+        non-empty fields will be updated instead.
+        The houseID field must be a valid house ID.
+        The choreID field must a valid (super) chore ID of that house.
+        The id field must be non-empty.
+        Request body example:
+            {'houseID': 'aslkdf',
+                'choreID': '12lcxzv',
+                'id': 'zoiwern',
+                'assignee': 'asdnzxvcie',
+                'dueDate': 'Thu, 01 May 2025 07:00:00 GMT',
+                'isDone': false
+            }
+    """
+    data = request.get_json()
+    return upsert_chore_instance(db, data)
+
 @app.route('/upsert-chore', methods=['POST'])
 def upsert_chore_route():
+    # TODO: rename choreID to id and all references of it
     """
         Creates a new chore under a house in the database's house
         collection. If the chore already exists, then non-empty fields
@@ -56,11 +78,11 @@ def upsert_chore_route():
                 'assignees': [
                     'asdnzxvcie'],
                 'description': 'A useful desc.',
-                'emoji': '\ud83e\uddb8',
-                'frequencyDays': [3,7],
+                'emoji': '<emojiHere>',
+                'frequencyDays': ['3','7'],
                 'frequencyPattern': 'weekly',
                 'name': 'choreName',
-                'startDate': '"Thu, 01 May 2025 07:00:00 GMT'
+                'startDate': 'Thu, 01 May 2025 07:00:00 GMT'
             }
     """
     data = request.get_json()

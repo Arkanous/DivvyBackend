@@ -2,12 +2,56 @@ from firebase_admin import firestore
 from datetime import datetime
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY
 
+def upsert_chore_instance(db, data):
+    # TODO: lots to do here, but definitely need to make sure that choreID is valid
+    try:
+        HOUSES = db.collection('houses')
+        house_ref = HOUSES.document(data.get('houseID'))
+
+        CHORE_INSTANCES = house_ref.collection('choreInstances')
+        chore_inst_ref = CHORE_INSTANCES.document(data.get('id'))
+        chore_inst = chore_inst_ref.get()
+
+        chore_inst_dict = {}
+        if (chore_inst.exists):
+            chore_inst_dict = chore_inst.to_dict()
+
+        id = data.get('id')
+
+        assignee = data.get('assignee')
+        if (chore_inst.exists and assignee == ''):
+            assignee = chore_inst_dict['assignee']
+        
+        dueDate = data.get('dueDate')
+        if (chore_inst.exists and dueDate == ''):
+            dueDate = chore_inst_dict['dueDate']
+
+        isDone = data.get('isDone')
+        if (chore_inst.exists and isDone == ''):
+            isDone = chore_inst_dict['isDone']
+
+        chore_inst_data = {
+            'id': id,
+            'assignee': assignee,
+            'dueDate': dueDate,
+            'isDone': isDone
+        }
+    
+        chore_inst_ref.set(chore_inst_data)
+        return id
+
+    except Exception as e:
+        print(f"Error creating/updating user: {e}")
+        return None
+    
+
 def upsert_chore(db, data):
     try:
         HOUSES = db.collection('houses')
         house_ref = HOUSES.document(data.get('houseID'))
 
-        chore_ref = house_ref.collection('chores')
+        CHORES = house_ref.collection('chores')
+        chore_ref = CHORES.document(data.get('choreID'))
         chore = chore_ref.get()
 
         chore_dict = {}
@@ -15,7 +59,7 @@ def upsert_chore(db, data):
             chore_dict = chore.to_dict()
         
         id = data.get('choreID')
-        if (chore.exists and id == ''):
+        if (chore.exists and id == ''):     # useless
             id = chore_dict['id']
 
         assignees = data.get('assignees')
