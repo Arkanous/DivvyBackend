@@ -1,16 +1,16 @@
 # IGNORE THIS FOR NOW
 
 from flask import Flask, request, jsonify, make_response
-import firebase_admin
 from firebase_admin import credentials, firestore, initialize_app
 from datetime import timedelta
 import os
 import sys
 from dotenv import load_dotenv
 from flask_cors import CORS
+from google.cloud.firestore_v1 import FieldFilter
 
-from houseService.house_utils import create_house, get_house
-from userService.user_utils import upsert_user, upsert_member
+from houseService.house_utils import create_house, delete_collection, get_house
+from userService.user_utils import upsert_user
 from choreService.chore_utils import upsert_chore, upsert_chore_instance
 
 # Load .env file variables
@@ -35,6 +35,7 @@ db = firestore.client()
 
 # Primary db collection. The other collection is the "holding area" for new users.
 HOUSES = db.collection('houses')
+USERS = db.collection('users')
 
 
 # /// Public Routes /// #
@@ -42,8 +43,8 @@ HOUSES = db.collection('houses')
 def home():
     return "Hello, Divvy App Gateway!"
 
-@app.route('/upsert-member', methods=['POST'])
-def upsert_member_route():
+@app.route('/upsert-member-<house_id>', methods=['POST'])
+def upsert_member_route(house_id):
     """
         Adds an existing user as a member to a house in the database's
         house collection. If the member already exists, then non-empty
@@ -65,7 +66,15 @@ def upsert_member_route():
             }
     """
     data = request.get_json()
-    return upsert_member(db, data)
+    # TODO: check to make sure the user exists already
+    try:
+        house_ref = HOUSES.document(house_id)
+        member_id = data.get('id')
+        house_ref.collection('members').document(member_id).set(data)
+        return jsonify({'id': member_id}) 
+    except Exception as e:
+        print(f"Error creating/updating user: {e}")
+        return jsonify({'error': 'Member could not be added: {e}'}), 400
 
 @app.route('/upsert-chore-instance', methods=['POST'])
 def upsert_chore_instance_route():
@@ -140,10 +149,9 @@ def delete_user_route(user_id):
                 'id': 'NisesS
             }
     """
-    USERS = db.collection('users')
     user_ref = USERS.document(user_id)
     user_ref.delete()
-    return user_id
+    return jsonify({"id": str(user_id)}) 
 
 @app.route('/add-house', methods=['POST'])
 def create_house_route():
@@ -159,6 +167,27 @@ def create_house_route():
     data = request.get_json()
     return create_house(db, data)
 
+
+@app.route('/delete-house-<house_id>', methods=['POST'])
+def delete_house_route(house_id):
+    """
+        Deletes a house in the database's House collection.
+        Deletes all subcollections within.
+        The id field must be non-empty.
+    """
+    house_ref = HOUSES.document(house_id)
+    members_ref = house_ref.collection('members')
+    delete_collection(members_ref, 10)
+    chore_inst_ref = house_ref.collection('choreInstances')
+    delete_collection(chore_inst_ref, 100)
+    subgroups_ref = house_ref.collection('subgroups')
+    delete_collection(subgroups_ref, 10)
+    chores_ref = house_ref.collection('chores')
+    delete_collection(chores_ref, 10)
+    # finally, delete hosue
+    house_ref.delete()
+    return jsonify({"id": str(house_id)}) 
+
 @app.route('/get-house-<house_id>', methods=['GET'])
 def get_house_route(house_id):
     """
@@ -167,13 +196,25 @@ def get_house_route(house_id):
     """
     return get_house(db, house_id)
 
+@app.route('/get-house-join-<join_code>', methods=['GET'])
+def get_house_join_route(join_code):
+    """
+        Retrieves a house document from the database's houses collection with
+        the matching join code
+    """
+    house_query = HOUSES.where(filter=FieldFilter("joinCode", "==", join_code))
+    house_docs = house_query.get()
+    if house_docs:
+        return house_docs[0].to_dict()
+    else:
+        return jsonify({'error': 'House with code {join_code} not found'}), 400
+
 @app.route('/get-user-<user_id>', methods=['GET'])
 def get_user_route(user_id):
     """
         Retrieves a user's house from the database's users collection.
         If the user ID does not exist in the database, returns None.
     """
-    USERS = db.collection('users')
     user_ref = USERS.document(user_id)
     user = user_ref.get()
     if user.exists:

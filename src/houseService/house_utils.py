@@ -24,8 +24,8 @@ def create_house(db, data):
         # if not house_id or not house_name or not creator_user_id:
         #     return jsonify({'error': 'House ID and name, and creator user ID are required'}), 400
 
-        HOUSES.document(house_id).set(house_data)
-        return house_id
+        HOUSES.document(house_id).set(data)
+        return jsonify({"id": str(house_id)}) 
     except Exception as e:
         print(f"Error creating house: {e}")
         return None
@@ -48,11 +48,9 @@ def get_house(db, house_id):
         if house.exists:
             return house.to_dict()
         else:
-            print(f"House with ID {house_id} not found.")
-            return None
+            return jsonify({'error': 'House with code {join_code} not found'}), 400
     except Exception as e:
-        print(f"Error getting house: {e}")
-        return None
+        return jsonify({'error': 'e'}), 400
 
 
 # Old Methods - need to be updated eventually
@@ -99,3 +97,21 @@ def get_houses_by_user(db, user_id):
     except Exception as e:
         print(f"Error getting houses for user {user_id}: {e}")
         return []
+    
+
+# coll_ref is the collection reference to delete, batch_size
+# is the number of docs to delete in a batch.
+def delete_collection(coll_ref, batch_size):
+    if batch_size == 0:
+        return
+
+    docs = coll_ref.list_documents(page_size=batch_size)
+    deleted = 0
+
+    for doc in docs:
+        print(f"Deleting doc {doc.id} => {doc.get().to_dict()}")
+        doc.delete()
+        deleted = deleted + 1
+
+    if deleted >= batch_size:
+        return delete_collection(coll_ref, batch_size)
