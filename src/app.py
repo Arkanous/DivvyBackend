@@ -72,7 +72,7 @@ def upsert_member_route(house_id):
         house_ref = HOUSES.document(house_id)
         member_id = data.get('id')
         house_ref.collection('members').document(member_id).set(data)
-        return jsonify({'id': member_id}) 
+        return jsonify({'id': member_id})
     except Exception as e:
         print(f"Error creating/updating user: {e}")
         return jsonify({'error': 'Member could not be added: {e}'}), 400
