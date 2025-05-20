@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 
 from houseService.house_utils import create_house, get_house
-from userService.user_utils import upsert_user
+from userService.user_utils import upsert_user, upsert_member
 from choreService.chore_utils import upsert_chore, upsert_chore_instance
 
 # Load .env file variables
@@ -41,6 +41,31 @@ HOUSES = db.collection('houses')
 @app.route('/')
 def home():
     return "Hello, Divvy App Gateway!"
+
+@app.route('/upsert-member', methods=['POST'])
+def upsert_member_route():
+    """
+        Adds an existing user as a member to a house in the database's
+        house collection. If the member already exists, then non-empty
+        fields will be updated instead.
+        The houseID field must be a valid house ID.
+        The id field must be non-empty.
+        Request body example:
+            {'houseID': 'aslkdf',
+                'id': 'zoiwern',
+                'chores': [
+                    'asdnzxpow8cx'],
+                'dateJoined': 'Thu, 01 May 2025 07:00:00 GMT',
+                'email': 'example@divvy.com',
+                'name': 'a Name',
+                'onTimePct': '82',
+                'profilePicture': 'lightGreen',
+                'subgroups': [
+                    'zxc0923n']
+            }
+    """
+    data = request.get_json()
+    return upsert_member(db, data)
 
 @app.route('/upsert-chore-instance', methods=['POST'])
 def upsert_chore_instance_route():
@@ -100,8 +125,6 @@ def upsert_user_route():
                 'houseID': 'alskdjfl',
                 'id': 'NisesS
             }
-        If id already exists in the database, its data will be
-        overwritten.
     """
     data = request.get_json()
     return upsert_user(db, data)

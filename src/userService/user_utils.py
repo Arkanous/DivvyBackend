@@ -24,6 +24,69 @@ def get_user(db, user_id):
     except Exception as e:
         print(f"Error getting user: {e}")
         return None
+    
+def upsert_member(db, data):
+    # TODO: check to make sure the user exists already
+    try:
+        HOUSES = db.collection('houses')
+        house_ref = HOUSES.document(data.get('houseID'))
+        
+        MEMBERS = house_ref.collection('members')
+        member_ref = MEMBERS.document(data.get('id'))
+        member = member_ref.get()
+
+        member_dict = {}
+        if (member.exists):
+            member_dict = member.to_dict()
+
+        id = data.get('id')
+
+        chores = data.get('chores')
+        if (member.exists and chores == ''):
+            chores = member_dict['chores']
+        
+        dateJoined = data.get('dateJoined')
+        if (member.exists and dateJoined == ''):
+            dateJoined = member_dict['dateJoined']
+        
+        email = data.get('email')
+        if (member.exists and email == ''):
+            email = member_dict['email']
+
+        name = data.get('name')
+        if (member.exists and name == ''):
+            name = member_dict['name']
+
+        onTimePct = data.get('onTimePct')
+        if (member.exists and onTimePct == ''):
+            onTimePct = member_dict['onTimePct']
+
+        profilePicture = data.get('profilePicture')
+        if (member.exists and profilePicture == ''):
+            profilePicture = member_dict['profilePicture']
+
+        subgroups = data.get('subgroups')
+        if (member.exists and subgroups == ''):
+            subgroups = member_dict['subgroups']
+
+
+        member_data = {
+            'id': id,
+            'chores': chores,
+            'dateJoined': dateJoined,
+            'email': email,
+            'name': name,
+            'onTimePct': onTimePct,
+            'profilePicture': profilePicture,
+            'subgroups': subgroups
+        }
+
+        member_ref.set(member_data)
+        return id
+
+    except Exception as e:
+        print(f"Error creating/updating user: {e}")
+        return None
 
 def upsert_user(db, data):
     try:
