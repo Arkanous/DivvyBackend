@@ -1,111 +1,36 @@
 from firebase_admin import firestore
 from datetime import datetime
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY
+from flask import jsonify
 
-def upsert_chore_instance(db, data):
+def upsert_chore_instance(db, data, house_id):
     # TODO: lots to do here, but definitely need to make sure that choreID is valid
     try:
         HOUSES = db.collection('houses')
-        house_ref = HOUSES.document(data.get('houseID'))
+        house_ref = HOUSES.document(house_id)
 
         CHORE_INSTANCES = house_ref.collection('choreInstances')
         chore_inst_ref = CHORE_INSTANCES.document(data.get('id'))
-        chore_inst = chore_inst_ref.get()
-
-        chore_inst_dict = {}
-        if (chore_inst.exists):
-            chore_inst_dict = chore_inst.to_dict()
-
-        id = data.get('id')
-
-        assignee = data.get('assignee')
-        if (chore_inst.exists and assignee == ''):
-            assignee = chore_inst_dict['assignee']
-        
-        dueDate = data.get('dueDate')
-        if (chore_inst.exists and dueDate == ''):
-            dueDate = chore_inst_dict['dueDate']
-
-        isDone = data.get('isDone')
-        if (chore_inst.exists and isDone == ''):
-            isDone = chore_inst_dict['isDone']
-
-        chore_inst_data = {
-            'id': id,
-            'assignee': assignee,
-            'dueDate': dueDate,
-            'isDone': isDone
-        }
     
-        chore_inst_ref.set(chore_inst_data)
-        return id
-
+        chore_inst_ref.set(data)
+        return jsonify({'id': data.get('id')}) 
     except Exception as e:
-        print(f"Error creating/updating user: {e}")
-        return None
+        print(f"Error creating/updating chore instance: {e}")
+        return jsonify({'error': 'Could not upsert chore instance'}), 400
     
 
-def upsert_chore(db, data):
+def upsert_chore(db, data, house_id):
     try:
         HOUSES = db.collection('houses')
-        house_ref = HOUSES.document(data.get('houseID'))
+        house_ref = HOUSES.document(house_id)
 
         CHORES = house_ref.collection('chores')
-        chore_ref = CHORES.document(data.get('choreID'))
-        chore = chore_ref.get()
-
-        chore_dict = {}
-        if (chore.exists):
-            chore_dict = chore.to_dict()
-        
-        id = data.get('choreID')
-        if (chore.exists and id == ''):     # useless
-            id = chore_dict['id']
-
-        assignees = data.get('assignees')
-        if (chore.exists and assignees == ''):      # not sure how to check for empty table []
-            assignees = chore_dict['assignees']
-        
-        desc = data.get('description')
-        if (chore.exists and desc == ''):
-            desc = chore_dict['description']
-
-        emoji = data.get('emoji')
-        if (chore.exists and emoji == ''):
-            emoji = chore_dict['emoji']
-
-        freqDays = data.get('frequencyDays')
-        if (chore.exists and freqDays == ''):
-            freqDays = chore_dict['frequencyDays']
-
-        freqPattern = data.get('frequencyPattern')
-        if (chore.exists and freqPattern == ''):        # same issue here
-            freqPattern = chore_dict['frequencyPattern']
-
-        name = data.get('name')
-        if (chore.exists and name == ''):
-            name = chore_dict['name']
-
-        startDate = data.get('startDate')
-        if (chore.exists and startDate == ''):
-            startDate = chore_dict['startDate']
-
-        chore_data = {
-            'id': id,
-            'assignees': assignees,
-            'description': desc,
-            'emoji': emoji,
-            'frequencyDays': freqDays,
-            'frequencyPattern': freqPattern,
-            'name': name,
-            'startDate': startDate
-        }
-    
-        chore_ref.set(chore_data)
-        return id
+        chore_ref = CHORES.document(data.get('id'))
+        chore_ref.set(data)
+        return jsonify({'id': data.get('id')}) 
     except Exception as e:
-        print(f"Error creating/updating user: {e}")
-        return None
+        print(f"Error creating/updating chore: {e}")
+        return jsonify({'error': 'Could not upsert chore'}), 400
 
 def create_chore(db, house_id, description, assigned_to, schedule_type, schedule_data, created_by, subgroup_id=None):
     """

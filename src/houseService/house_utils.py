@@ -99,19 +99,15 @@ def get_houses_by_user(db, user_id):
         return []
     
 
-# coll_ref is the collection reference to delete, batch_size
-# is the number of docs to delete in a batch.
-def delete_collection(coll_ref, batch_size):
-    if batch_size == 0:
-        return
-
-    docs = coll_ref.list_documents(page_size=batch_size)
+# coll_ref is the collection reference to delete
+def delete_collection(coll_ref, batch_size=50):
+    docs = coll_ref.limit(batch_size).stream()
     deleted = 0
 
     for doc in docs:
-        print(f"Deleting doc {doc.id} => {doc.get().to_dict()}")
-        doc.delete()
-        deleted = deleted + 1
+        print(f'Deleting doc {doc.id}')
+        doc.reference.delete()
+        deleted += 1
 
     if deleted >= batch_size:
         return delete_collection(coll_ref, batch_size)

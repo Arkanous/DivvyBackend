@@ -76,8 +76,8 @@ def upsert_member_route(house_id):
         print(f"Error creating/updating user: {e}")
         return jsonify({'error': 'Member could not be added: {e}'}), 400
 
-@app.route('/upsert-chore-instance', methods=['POST'])
-def upsert_chore_instance_route():
+@app.route('/upsert-chore-instance-<house_id>', methods=['POST'])
+def upsert_chore_instance_route(house_id):
     """
         Creates a new chore instance under a house in the database's
         house collection. If the chore instance already exists, then
@@ -85,20 +85,12 @@ def upsert_chore_instance_route():
         The houseID field must be a valid house ID.
         The choreID field must a valid (super) chore ID of that house.
         The id field must be non-empty.
-        Request body example:
-            {'houseID': 'aslkdf',
-                'choreID': '12lcxzv',
-                'id': 'zoiwern',
-                'assignee': 'asdnzxvcie',
-                'dueDate': 'Thu, 01 May 2025 07:00:00 GMT',
-                'isDone': false
-            }
     """
     data = request.get_json()
-    return upsert_chore_instance(db, data)
+    return upsert_chore_instance(db, data, house_id)
 
-@app.route('/upsert-chore', methods=['POST'])
-def upsert_chore_route():
+@app.route('/upsert-chore-<house_id>', methods=['POST'])
+def upsert_chore_route(house_id):
     # TODO: rename choreID to id and all references of it
     """
         Creates a new chore under a house in the database's house
@@ -120,7 +112,40 @@ def upsert_chore_route():
             }
     """
     data = request.get_json()
-    return upsert_chore(db, data)
+    return upsert_chore(db, data, house_id)
+
+@app.route('/upsert-subgroup-<house_id>', methods=['POST'])
+def upsert_subgroup_route(house_id):
+    """
+        Creates a new subgroup under a house in the database's house
+        collection. If the subgroup already exists, then non-empty fields
+        will be updated instead.
+    """
+    try:
+        data = request.get_json()
+        house_ref = HOUSES.document(house_id)
+        sub_ref = house_ref.collection('subgroups')
+        sub_ref.document(data.get('id')).set(data)
+        return jsonify({'id': data.get('id')}) 
+    except Exception as e:
+        return jsonify({'error': 'Subgroup could not be added'}), 400
+    
+
+
+@app.route('/upsert-house', methods=['POST'])
+def upsert_house_route():
+    """
+        Updates house data. If the house already exists, then non-empty fields
+        will be updated instead.
+    """
+    try:
+        data = request.get_json()
+        house_ref = HOUSES.document(data.get('id'))
+        house_ref.set(data)
+        return jsonify({'id': data.get('id')}) 
+    except Exception as e:
+        return jsonify({'error': 'House could not be updated'}), 400
+    
 
 @app.route('/upsert-user', methods=['POST'])
 def upsert_user_route():
@@ -153,6 +178,54 @@ def delete_user_route(user_id):
     user_ref.delete()
     return jsonify({"id": str(user_id)}) 
 
+@app.route('/delete-chore-<house_id>', methods=['POST'])
+def delete_chore_route(house_id):
+    """
+        Deletes a chore in the database's house collection.
+        The id field must be non-empty.
+    """
+    data = request.get_json()
+    house_ref = HOUSES.document(house_id)
+    chore_ref = house_ref.collection('chores').document(data.get('id'))
+    chore_ref.delete()
+    return jsonify({"id": str(data.get('id'))}) 
+
+@app.route('/delete-chore-instance-<house_id>', methods=['POST'])
+def delete_chore_instance_route(house_id):
+    """
+        Deletes a chore instance in the database's house collection.
+        The id field must be non-empty.
+    """
+    data = request.get_json()
+    house_ref = HOUSES.document(house_id)
+    chore_ref = house_ref.collection('choreInstances').document(data.get('id'))
+    chore_ref.delete()
+    return jsonify({"id": str(data.get('id'))}) 
+
+@app.route('/delete-subgroup-<house_id>', methods=['POST'])
+def delete_subgroup_route(house_id):
+    """
+        Deletes a subgroup in the database's house collection.
+        The id field must be non-empty.
+    """
+    data = request.get_json()
+    house_ref = HOUSES.document(house_id)
+    sub_ref = house_ref.collection('subgroups').document(data.get('id'))
+    sub_ref.delete()
+    return jsonify({"id": str(data.get('id'))}) 
+
+@app.route('/delete-member-<house_id>', methods=['POST'])
+def delete_member_route(house_id):
+    """
+        Deletes a memb er in the database's house collection.
+        The id field must be non-empty.
+    """
+    data = request.get_json()
+    house_ref = HOUSES.document(house_id)
+    sub_ref = house_ref.collection('members').document(data.get('id'))
+    sub_ref.delete()
+    return jsonify({"id": str(data.get('id'))}) 
+
 @app.route('/add-house', methods=['POST'])
 def create_house_route():
     """
@@ -177,14 +250,14 @@ def delete_house_route(house_id):
     """
     house_ref = HOUSES.document(house_id)
     members_ref = house_ref.collection('members')
-    delete_collection(members_ref, 10)
+    delete_collection(members_ref)
     chore_inst_ref = house_ref.collection('choreInstances')
-    delete_collection(chore_inst_ref, 100)
+    delete_collection(chore_inst_ref)
     subgroups_ref = house_ref.collection('subgroups')
-    delete_collection(subgroups_ref, 10)
+    delete_collection(subgroups_ref)
     chores_ref = house_ref.collection('chores')
-    delete_collection(chores_ref, 10)
-    # finally, delete hosue
+    delete_collection(chores_ref)
+    # finally, delete house
     house_ref.delete()
     return jsonify({"id": str(house_id)}) 
 
@@ -229,10 +302,11 @@ def get_house_chores_route(house_id):
         Returns None if house_id is not in the database.
     """
     house_ref = HOUSES.document(house_id)
+    house = house_ref.get()
+    if not house.exists:
+        return jsonify({'error': 'House does not exist'}), 400
     chores = house_ref.collection('chores').stream()
-    chore_list = {
-
-    }
+    chore_list = {}
     for chore in chores:
         chore_list[chore.id] = chore.to_dict()
 
@@ -245,6 +319,9 @@ def get_house_chore_instances_routes(house_id):
         Returns None if house_id is not in the database.
     """
     house_ref = HOUSES.document(house_id)
+    house = house_ref.get()
+    if not house.exists:
+        return jsonify({'error': 'House does not exist'}), 400
     choreInstances = house_ref.collection('choreInstances').stream()
     chore_instance_list = {
 
@@ -261,6 +338,9 @@ def get_house_members_routes(house_id):
         Returns None if house_id is not in the database.
     """
     house_ref = HOUSES.document(house_id)
+    house = house_ref.get()
+    if not house.exists:
+        return jsonify({'error': 'House does not exist'}), 400
     members = house_ref.collection('members').stream()
     members_list = {
 
@@ -277,6 +357,9 @@ def get_house_subgroups_routes(house_id):
         Returns None if house_id is not in the database.
     """
     house_ref = HOUSES.document(house_id)
+    house = house_ref.get()
+    if not house.exists:
+        return jsonify({'error': 'House does not exist'}), 400
     subgroups = house_ref.collection('subgroups').stream()
     subgroups_list = {
 
@@ -286,6 +369,26 @@ def get_house_subgroups_routes(house_id):
 
     return subgroups_list
 
+@app.route('/get-house-<house_id>-subgroup-<subgroup_id>', methods=['GET'])
+def get_house_subgroup_route(house_id, subgroup_id):
+    """
+        Retrieves a subgroup from a house
+        Returns None if house_id or subgroup_id is not in the database. 
+    """
+
+    try:
+        house_ref = HOUSES.document(house_id)
+        house = house_ref.get()
+        if not house.exists:
+            return jsonify({'error': 'House does not exist'}), 400
+        subgroup_ref = house_ref.collection('subgroups').document(subgroup_id)
+        subgroup = subgroup_ref.get()
+        if subgroup.exists:
+            return subgroup.to_dict()
+        return jsonify({'error': 'Subgroup not found'}), 400
+    except Exception as e:
+        return jsonify({'error': 'Subgroup not found'}), 400
+    
 # /// END Public Routes /// #
 
 # Run the app
