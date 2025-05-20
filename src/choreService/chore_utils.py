@@ -3,6 +3,9 @@ from datetime import datetime
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY
 from flask import jsonify
 
+# /// Chore Utility Functions /// #
+    # Primarily called by app.py's public routes
+
 def upsert_chore_instance(db, data, house_id):
     # TODO: lots to do here, but definitely need to make sure that choreID is valid
     try:
@@ -32,136 +35,10 @@ def upsert_chore(db, data, house_id):
         print(f"Error creating/updating chore: {e}")
         return jsonify({'error': 'Could not upsert chore'}), 400
 
-def create_chore(db, house_id, description, assigned_to, schedule_type, schedule_data, created_by, subgroup_id=None):
-    """
-    Creates a new chore in Firestore.
 
-    Args:
-        db (firestore.Client): The Firestore client.
-        house_id (str): The ID of the house the chore belongs to.
-        description (str): The description of the chore.
-        assigned_to (list): A list of user IDs assigned to the chore.
-        schedule_type (str): The type of schedule ('once', 'daily', 'weekly', 'monthly').
-        schedule_data (dict):  Schedule-specific data (e.g., {'date': datetime}, {'day_of_week': 0-6}, {'day_of_month': 1-31}).
-        created_by (str): The user ID of the creator
-        subgroup_id (str, optional): The ID of the subgroup the chore belongs to. Defaults to None.
-
-    Returns:
-        str: The ID of the newly created chore, or None on error.
-    """
-    try:
-        chore_ref = db.collection('Task').document()
-        chore_id = chore_ref.id
-        chore_data = {
-            'house_id': house_id,
-            'description': description,
-            'assigned_to': assigned_to,
-            'schedule_type': schedule_type,
-            'schedule_data': schedule_data,
-            'created_at': firestore.SERVER_TIMESTAMP,
-            'created_by': created_by,
-            'subgroup_id': subgroup_id,
-            'name': description,
-            'is_active': True
-        }
-        chore_ref.set(chore_data)
-        return chore_id
-    except Exception as e:
-        print(f"Error creating chore: {e}")
-        return None
-
-
-
-def generate_chore_instances(db, chore_id, start_date, end_date):
-    """
-    Generates chore instances for a given chore within a date range.
-
-    Args:
-        db (firestore.Client): The Firestore client.
-        chore_id (str): The ID of the chore.
-        start_date (datetime): The start date for generating instances.
-        end_date (datetime): The end date for generating instances.
-
-    Returns:
-        list: A list of IDs of the generated chore instances, or an empty list on error.
-    """
-    try:
-        chore_ref = db.collection('Task').document(chore_id)
-        chore_doc = chore_ref.get()
-        if not chore_doc.exists:
-            print(f"Chore with ID {chore_id} not found.")
-            return []
-
-        chore_data = chore_doc.to_dict()
-        schedule_type = chore_data['schedule_type']
-        schedule_data = chore_data['schedule_data']
-        assigned_to = chore_data['assigned_to']
-
-        instance_ids = []
-        if schedule_type == 'once':
-            chore_date = schedule_data.get('date')
-            if chore_date and start_date <= chore_date <= end_date:
-                instance_ref = db.collection('Task').document()
-                instance_id = instance_ref.id
-                instance_data = {
-                    'chore_id': chore_id,
-                    'date': chore_date,
-                    'completed': False,
-                    'assigned_to': assigned_to,
-                }
-                instance_ref.set(instance_data)
-                instance_ids.append(instance_id)
-        elif schedule_type == 'daily':
-            dates = list(rrule(DAILY, dtstart=start_date, until=end_date))
-            for chore_date in dates:
-                instance_ref = db.collection('Task').document()
-                instance_id = instance_ref.id
-                instance_data = {
-                    'chore_id': chore_id,
-                    'date': chore_date,
-                    'completed': False,
-                    'assigned_to': assigned_to,
-                }
-                instance_ref.set(instance_data)
-                instance_ids.append(instance_id)
-        elif schedule_type == 'weekly':
-            day_of_week = schedule_data.get('day_of_week')
-            if day_of_week is not None:
-                dates = list(rrule(WEEKLY, dtstart=start_date, until=end_date, byweekday=day_of_week))
-                for chore_date in dates:
-                    instance_ref = db.collection('Task').document()
-                    instance_id = instance_ref.id
-                    instance_data = {
-                        'chore_id': chore_id,
-                        'date': chore_date,
-                        'completed': False,
-                        'assigned_to': assigned_to,
-                    }
-                    instance_ref.set(instance_data)
-                    instance_ids.append(instance_id)
-        elif schedule_type == 'monthly':
-            day_of_month = schedule_data.get('day_of_month')
-            if day_of_month is not None:
-                dates = list(rrule(MONTHLY, dtstart=start_date, until=end_date, bymonthday=day_of_month))
-                for chore_date in dates:
-                    instance_ref = db.collection('Task').document()
-                    instance_id = instance_ref.id
-                    instance_data = {
-                        'chore_id': chore_id,
-                        'date': chore_date,
-                        'completed': False,
-                        'assigned_to': assigned_to,
-                    }
-                    instance_ref.set(instance_data)
-                    instance_ids.append(instance_id)
-        else:
-            print(f"Invalid schedule type: {schedule_type}")
-            return []
-        return instance_ids
-    except Exception as e:
-        print(f"Error generating chore instances: {e}")
-        return []
-
+# /// Un-Implemented Functions /// #
+    # These functions have been written, but aren't used
+    # and haven't been tested.
 
 def get_chore_instances_by_user(db, user_id, start_date, end_date):
     """
@@ -190,7 +67,6 @@ def get_chore_instances_by_user(db, user_id, start_date, end_date):
         return []
 
 
-
 def get_chore_instance(db, instance_id):
     """
     Retrieves a chore instance by its ID.
@@ -215,7 +91,6 @@ def get_chore_instance(db, instance_id):
         return None
 
 
-
 def update_chore_instance(db, instance_id, updates):
     """
     Updates a chore instance.
@@ -235,6 +110,7 @@ def update_chore_instance(db, instance_id, updates):
     except Exception as e:
         print(f"Error updating chore instance: {e}")
         return False
+
 
 def get_chores_by_house(db, house_id):
     """
