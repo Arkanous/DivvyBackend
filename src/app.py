@@ -127,7 +127,7 @@ def upsert_subgroup_route(house_id):
         house_ref = HOUSES.document(house_id)
         sub_ref = house_ref.collection('subgroups')
         sub_ref.document(data.get('id')).set(data)
-        return jsonify({'id': data.get('id')}) 
+        return jsonify({'id': data.get('id')})              # TODO: implement jsonify on all returns for routes and add 400 code on error.
     except Exception as e:
         return jsonify({'error': 'Subgroup could not be added'}), 400
     

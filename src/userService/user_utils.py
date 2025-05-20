@@ -2,6 +2,25 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from flask import jsonify
 
+# /// User Utility Functions /// #
+    # Primarily called by app.py's public routes
+
+def upsert_user(db, data):
+    try:
+        USERS = db.collection('users')
+        user_ref = USERS.document(data.get('id'))
+
+        user_ref.set(data)
+        return jsonify({"id": data.get('id')}) 
+    except Exception as e:
+        print(f"Error creating user: {e}")
+        return None
+    
+
+# /// Un-Implemented Functions /// #
+    # These functions have been written, but aren't used
+    # and haven't been tested.
+
 def get_user(db, user_id):
     """
     Retrieves a user document from Firestore.  This assumes you have a 'users'
@@ -24,16 +43,4 @@ def get_user(db, user_id):
             return None
     except Exception as e:
         print(f"Error getting user: {e}")
-        return None
-    
-
-def upsert_user(db, data):
-    try:
-        USERS = db.collection('users')
-        user_ref = USERS.document(data.get('id'))
-
-        user_ref.set(data)
-        return jsonify({"id": data.get('id')}) 
-    except Exception as e:
-        print(f"Error creating user: {e}")
         return None
