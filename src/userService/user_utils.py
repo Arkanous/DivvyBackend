@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from flask import jsonify
 
+
 # /// User Utility Functions /// #
     # Primarily called by app.py's public routes
 

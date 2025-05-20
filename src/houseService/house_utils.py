@@ -2,6 +2,9 @@ from flask import jsonify
 from firebase_admin import firestore
 
 
+# /// User Utility Functions /// #
+    # Primarily called by app.py's public routes
+
 def create_house(db, data):
     try:
         HOUSES = db.collection('houses')
@@ -30,6 +33,7 @@ def create_house(db, data):
         print(f"Error creating house: {e}")
         return None
 
+
 def get_house(db, house_id):
     """
     Retrieves a house document from Firestore.
@@ -53,7 +57,23 @@ def get_house(db, house_id):
         return jsonify({'error': 'e'}), 400
 
 
-# Old Methods - need to be updated eventually
+# coll_ref is the collection reference to delete
+def delete_collection(coll_ref, batch_size=50):
+    docs = coll_ref.limit(batch_size).stream()
+    deleted = 0
+
+    for doc in docs:
+        print(f'Deleting doc {doc.id}')
+        doc.reference.delete()
+        deleted += 1
+
+    if deleted >= batch_size:
+        return delete_collection(coll_ref, batch_size)
+
+
+# /// Un-Implemented Functions /// #
+    # These functions have been written, but aren't used
+    # and haven't been tested.
 
 def add_member_to_house(db, house_id, user_id):
     """
@@ -97,17 +117,3 @@ def get_houses_by_user(db, user_id):
     except Exception as e:
         print(f"Error getting houses for user {user_id}: {e}")
         return []
-    
-
-# coll_ref is the collection reference to delete
-def delete_collection(coll_ref, batch_size=50):
-    docs = coll_ref.limit(batch_size).stream()
-    deleted = 0
-
-    for doc in docs:
-        print(f'Deleting doc {doc.id}')
-        doc.reference.delete()
-        deleted += 1
-
-    if deleted >= batch_size:
-        return delete_collection(coll_ref, batch_size)
