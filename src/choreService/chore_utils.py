@@ -2,6 +2,66 @@ from firebase_admin import firestore
 from datetime import datetime
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY
 
+def upsert_chore(db, data):
+    try:
+        HOUSES = db.collection('houses')
+        house_ref = HOUSES.document(data.get('houseID'))
+
+        chore_ref = house_ref.collection('chores')
+        chore = chore_ref.get()
+
+        chore_dict = {}
+        if (chore.exists):
+            chore_dict = chore.to_dict()
+        
+        id = data.get('choreID')
+        if (chore.exists and id == ''):
+            id = chore_dict['id']
+
+        assignees = data.get('assignees')
+        if (chore.exists and assignees == ''):      # not sure how to check for empty table []
+            assignees = chore_dict['assignees']
+        
+        desc = data.get('description')
+        if (chore.exists and desc == ''):
+            desc = chore_dict['description']
+
+        emoji = data.get('emoji')
+        if (chore.exists and emoji == ''):
+            emoji = chore_dict['emoji']
+
+        freqDays = data.get('frequencyDays')
+        if (chore.exists and freqDays == ''):
+            freqDays = chore_dict['frequencyDays']
+
+        freqPattern = data.get('frequencyPattern')
+        if (chore.exists and freqPattern == ''):        # same issue here
+            freqPattern = chore_dict['frequencyPattern']
+
+        name = data.get('name')
+        if (chore.exists and name == ''):
+            name = chore_dict['name']
+
+        startDate = data.get('startDate')
+        if (chore.exists and startDate == ''):
+            startDate = chore_dict['startDate']
+
+        chore_data = {
+            'id': id,
+            'assignees': assignees,
+            'description': desc,
+            'emoji': emoji,
+            'frequencyDays': freqDays,
+            'frequencyPattern': freqPattern,
+            'name': name,
+            'startDate': startDate
+        }
+    
+        chore_ref.set(chore_data)
+        return id
+    except Exception as e:
+        print(f"Error creating/updating user: {e}")
+        return None
 
 def create_chore(db, house_id, description, assigned_to, schedule_type, schedule_data, created_by, subgroup_id=None):
     """

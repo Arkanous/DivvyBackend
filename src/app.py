@@ -11,6 +11,7 @@ from flask_cors import CORS
 
 from houseService.house_utils import create_house, get_house
 from userService.user_utils import upsert_user
+from choreService.chore_utils import upsert_chore
 
 # Load .env file variables
 load_dotenv()
@@ -41,6 +42,30 @@ HOUSES = db.collection('houses')
 def home():
     return "Hello, Divvy App Gateway!"
 
+@app.route('/upsert-chore', methods=['POST'])
+def upsert_chore_route():
+    """
+        Creates a new chore under a house in the database's house
+        collection. If the chore already exists, then non-empty fields
+        will be updated instead.
+        The houseID field must be a valid house ID.
+        The choreID field must be non-empty.
+        Request body example:
+            {'houseID': 'aslkdf',
+                'choreID': '12lcxzv',
+                'assignees': [
+                    'asdnzxvcie'],
+                'description': 'A useful desc.',
+                'emoji': '\ud83e\uddb8',
+                'frequencyDays': [3,7],
+                'frequencyPattern': 'weekly',
+                'name': 'choreName',
+                'startDate': '"Thu, 01 May 2025 07:00:00 GMT'
+            }
+    """
+    data = request.get_json()
+    return upsert_chore(db, data)
+
 @app.route('/upsert-user', methods=['POST'])
 def upsert_user_route():
     """
@@ -51,7 +76,8 @@ def upsert_user_route():
         Request body example:
             {'email': 'example@gmail.com',
                 'houseID': 'alskdjfl',
-                'id': 'NisesS}
+                'id': 'NisesS
+            }
         If id already exists in the database, its data will be
         overwritten.
     """
@@ -66,7 +92,8 @@ def delete_user_route(user_id):
         Request body example:
             {'email': 'example@gmail.com',
                 'houseID': 'alskdjfl',
-                'id': 'NisesS}
+                'id': 'NisesS
+            }
     """
     USERS = db.collection('users')
     user_ref = USERS.document(user_id)
