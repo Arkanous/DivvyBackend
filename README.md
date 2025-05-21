@@ -82,28 +82,28 @@ The application requires a Firebase Admin SDK service account credentials file.
 3.  Note that with the current release, the Flask server and the frontend need to be running on the same machine. This will change. See the next step for how to start the server.
 
 ## File layout
-DivvyBackend/
-├── src/
-│   ├── houseService/           # Handles all house-related logic and database interactions
-│   │   ├── __init__.py
-│   │   ├── house_utils.py      # Utilities for house data processing
-│   │   └── houseUtilsTests.py  # Unit tests for userService
-│   ├── userService/            # Manages user accounts, profiles, and authentication
-│   │   ├── __init__.py
-│   │   ├── user_utils.py       # Utilities for user authentication
-│   │   └── userUtilsTests.py   # Unit tests for userService
-│   ├── choreService/           # Manages chore creation, assignment, and tracking
-│   │   ├── __init__.py
-│   │   ├── chore_utils.py      # Utilities for chore assignments
-│   │   └── choreUtilsTests.py  # Unit tests for userService
-│   ├── utils/                  # General utility functions, particularly for Firebase interactions
-│   │   ├── __init__.py
-│   │   └── firebase_utils.py  # Utility for Firebase database operations
-│   │   └── firebaseUtilsTests.py # Unit tests for userService
-│   └── app.py                  # The main application entry point and API routes
-├── .gitignore                  # Files and directories to be ignored by Git
-├── requirements.txt            # Python dependencies
-└── README.md                   # This README file
+DivvyBackend/  
+├── src/  
+│   ├── houseService/           # Handles all house-related logic and database interactions  
+│   │   ├── __init__.py  
+│   │   ├── house_utils.py      # Utilities for house data processing  
+│   │   └── houseUtilsTests.py  # Unit tests for userService  
+│   ├── userService/            # Manages user accounts, profiles, and authentication  
+│   │   ├── __init__.py  
+│   │   ├── user_utils.py       # Utilities for user authentication  
+│   │   └── userUtilsTests.py   # Unit tests for userService  
+│   ├── choreService/           # Manages chore creation, assignment, and tracking  
+│   │   ├── __init__.py  
+│   │   ├── chore_utils.py      # Utilities for chore assignments  
+│   │   └── choreUtilsTests.py  # Unit tests for userService  
+│   ├── utils/                  # General utility functions, particularly for Firebase interactions  
+│   │   ├── __init__.py  
+│   │   └── firebase_utils.py  # Utility for Firebase database operations  
+│   │   └── firebaseUtilsTests.py # Unit tests for userService  
+│   └── app.py                  # The main application entry point and API routes  
+├── .gitignore                  # Files and directories to be ignored by Git  
+├── requirements.txt            # Python dependencies 
+└── README.md                   # This README file  
 
 ## Running the System
 
@@ -301,3 +301,7 @@ PUT /chore/instances/<instance_id>
 ## How to Add New Tests
 - Create a test file inside the related folder you are unit testing
 - Go to .github\workflows\python-app.yml and add the command to run your test file to the run section at the bottom (i.e. python -m pytest ./choreService/choreServiceTests.py)
+
+## How to Build a Release of the Software
+- There are no steps yet until we add Digital Ocean to host our services
+- For release testing, make sure you test not only with curling, unit tests, but also opening the frontend and testing the connection locally
