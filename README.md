@@ -81,6 +81,30 @@ The application requires a Firebase Admin SDK service account credentials file.
 2.  Tests for the backend will work just fine without the frontend, and you can still use curl to access endpoints, but if you would like to run the full app, you will obviously need the frontend.
 3.  Note that with the current release, the Flask server and the frontend need to be running on the same machine. This will change. See the next step for how to start the server.
 
+## File layout
+DivvyBackend/
+├── src/
+│   ├── houseService/           # Handles all house-related logic and database interactions
+│   │   ├── __init__.py
+│   │   ├── house_utils.py      # Utilities for house data processing
+│   │   └── houseUtilsTests.py  # Unit tests for userService
+│   ├── userService/            # Manages user accounts, profiles, and authentication
+│   │   ├── __init__.py
+│   │   ├── user_utils.py       # Utilities for user authentication
+│   │   └── userUtilsTests.py   # Unit tests for userService
+│   ├── choreService/           # Manages chore creation, assignment, and tracking
+│   │   ├── __init__.py
+│   │   ├── chore_utils.py      # Utilities for chore assignments
+│   │   └── choreUtilsTests.py  # Unit tests for userService
+│   ├── utils/                  # General utility functions, particularly for Firebase interactions
+│   │   ├── __init__.py
+│   │   └── firebase_utils.py  # Utility for Firebase database operations
+│   │   └── firebaseUtilsTests.py # Unit tests for userService
+│   └── app.py                  # The main application entry point and API routes
+├── .gitignore                  # Files and directories to be ignored by Git
+├── requirements.txt            # Python dependencies
+└── README.md                   # This README file
+
 ## Running the System
 
 1.  **Run the Flask application:** (Without env)
@@ -169,291 +193,111 @@ Here's how to debug the application using Visual Studio Code:
 
 **NOTE: Not all endpoints are fully implemented yet. Please consult app.py to see documentation for the routes that are currently implemented. Below is a list of those endpoints:**
 
-- `POST /add-house`
-- `GET /get-house-<house_id>`
-- `GET /get-user-<user_id>`
-- `GET /get-house-<house_id>-chores`
-- `GET /get-house-<house_id>-chore-instances`
-- `GET /get-house-<house_id>-members`
-- `GET /get-house-<house_id>-subgroups`
+POST /upsert-user
+- Creates or updates a user.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"email":"test@example.com","id":"user123","houseID":"house456"}' http://127.0.0.1:5000/upsert-user
+- Request Body:
+  {
+    "email": "test@example.com",
+    "id": "user123",
+    "houseID": "house456"
+  }
+- Response:
+  {
+    "message": "User upserted successfully"
+  }
 
-**NOTE: Endpoints past this point may not be fully implemented. The documentation is left here for when they are implemented.**
+POST /add-house
+- Creates a new house.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"name":"My New House","id":"house456"}' http://127.0.0.1:5000/add-house
+- Request Body:
+  {
+    "name": "My New House",
+    "id": "house456"
+  }
+- Response:
+  {
+    "message": "House created successfully"
+  }
 
-### User Service Endpoints
+POST /add-chore
+- Creates a new chore.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"name":"Take out trash","id":"chore789","houseID":"house456","description":"Take the trash out to the curb","points":10}' http://127.0.0.1:5000/add-chore
+- Request Body:
+  {
+    "name": "Take out trash",
+    "id": "chore789",
+    "houseID": "house456",
+    "description": "Take the trash out to the curb",
+    "points": 10
+  }
+- Response:
+  {
+    "message": "Chore created successfully"
+  }
 
-- `GET /user/<user_id>`
+POST /add-chore-instance
+- Creates a new chore instance.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"choreID":"chore789","assignedTo":"user123","dueDate":"2025-06-01T12:00:00Z","status":"pending","id":"instance123"}' http://127.0.0.1:5000/add-chore-instance
+- Request Body:
+  {
+    "choreID": "chore789",
+    "assignedTo": "user123",
+    "dueDate": "2025-06-01T12:00:00Z",
+    "status": "pending",
+    "id": "instance123"
+  }
+- Response:
+  {
+    "message": "Chore instance created successfully"
+  }
 
-  - Retrieves a user by their ID.
-  - Example: `curl http://0.0.0.0:5000/user/some-user-id`
-  - Response:
-
-    ```json
+GET /house/<house_id>/chores
+- Gets all chores in a house.
+- Example:
+  curl http://127.0.0.1:5000/house/house456/chores
+- Response:
+  [
     {
-      "email": "user@example.com",
-      "name": "Some User",
-      "user_id": "some-user-id"
+      "id": "chore789",
+      "name": "Take out trash",
+      "description": "Take the trash out to the curb",
+      "points": 10
     }
-    ```
+  ]
 
-- `POST /user`
-
-  - Creates a new user.
-  - Example:
-
-    ```bash
-    curl -X POST -H "Content-Type: application/json" -d '{"email":"newuser@example.com","password":"password123","name":"New User"}' [http://0.0.0.0:5000/user](http://0.0.0.0:5000/user)
-    ```
-
-  - Request Body:
-
-    ```json
+GET /house/<house_id>/chore-instances
+- Gets all chore instances in a house.
+- Example:
+  curl http://127.0.0.1:5000/house/house456/chore-instances
+- Response:
+  [
     {
-      "email": "user@example.com",
-      "password": "password123",
-      "name": "User Name"
+      "id": "instance123",
+      "choreID": "chore789",
+      "assignedTo": "user123",
+      "dueDate": "2025-06-01T12:00:00Z",
+      "status": "pending"
     }
-    ```
+  ]
 
-  - Response:
+PUT /chore/instances/<instance_id>
+- Updates a chore instance (e.g., to mark it as completed).
+- Example:
+  curl -X PUT -H "Content-Type: application/json" -d '{"status":"completed"}' http://0.0.0.0:5000/chore/instances/instance123
+- Request Body:
+  {
+    "status": "completed"
+  }
+- Response:
+  {
+    "message": "Chore instance updated successfully"
+  }
 
-    ```json
-    {
-      "message": "User created successfully",
-      "user_id": "new-user-id"
-    }
-    ```
-
-### House Service Endpoints
-
-- `POST /house`
-
-  - Creates a new house.
-  - Example:
-
-    ```bash
-    curl -X POST -H "Content-Type: application/json" -d '{"name":"My House","creator_user_id":"user123"}' [http://0.0.0.0:5000/house](http://0.0.0.0:5000/house)
-    ```
-
-  - Request Body:
-
-    ```json
-    {
-      "name": "House Name",
-      "creator_user_id": "user-id"
-    }
-    ```
-
-  - Response:
-
-    ```json
-    {
-      "message": "House created successfully",
-      "house_id": "house-id"
-    }
-    ```
-
-- `GET /house/<house_id>`
-
-  - Retrieves a house by its ID.
-  - Example: `curl http://0.0.0.0:5000/house/some-house-id`
-  - Response:
-
-    ```json
-    {
-      "house_id": "some-house-id",
-      "name": "Some House",
-      "members": ["user1", "user2"]
-    }
-    ```
-
-- `POST /house/<house_id>/members`
-
-  - Adds a member to a house.
-  - Example:
-
-    ```bash
-    curl -X POST -H "Content-Type: application/json" -d '{"user_id":"user456"}' [http://0.0.0.0:5000/house/some-house-id/members](http://0.0.0.0:5000/house/some-house-id/members)
-    ```
-
-  - Request Body:
-
-    ```json
-    {
-      "user_id": "user-id"
-    }
-    ```
-
-  - Response:
-
-    ```json
-    {
-      "message": "Member added successfully"
-    }
-    ```
-
-- `GET /house/user/<user_id>`
-
-  - Retrieves all houses a user is a member of.
-  - Example: `curl http://0.0.0.0:5000/house/user/some-user-id`
-  - Response:
-
-    ```json
-    [
-      {
-        "house_id": "house1",
-        "name": "House One"
-      },
-      {
-        "house_id": "house2",
-        "name": "House Two"
-      }
-    ]
-    ```
-
-### Chore Service Endpoints
-
-- `POST /chore`
-
-  - Creates a new chore.
-  - Example:
-
-    ```bash
-    curl -X POST -H "Content-Type: application/json" -d '{"house_id":"house123","description":"Clean kitchen","assigned_to":["user1","user2"],"schedule_type":"weekly","schedule_data":{"day_of_week":"Monday"},"created_by":"user123"}' [http://0.0.0.0:5000/chore](http://0.0.0.0:5000/chore)
-    ```
-
-  - Request Body:
-
-    ```json
-    {
-        "house_id": "house-id",
-        "description": "Chore description",
-        "assigned_to": ["user-id-1", "user-id-2"],
-        "schedule_type": "daily" or "weekly" or "monthly",
-        "schedule_data": { /* schedule-specific data */ },
-        "created_by": "user-id",
-        "subgroup_id": "optional-subgroup-id"
-    }
-    ```
-
-  - Response:
-
-    ```json
-    {
-      "message": "Chore created successfully",
-      "chore_id": "chore-id"
-    }
-    ```
-
-- `POST /chore/<chore_id>/instances`
-
-  - Generates chore instances for a given chore.
-  - Example:
-
-    ```bash
-    curl -X POST -H "Content-Type: application/json" -d '{"start_date":"2024-01-01","end_date":"2024-01-31"}' [http://0.0.0.0:5000/chore/chore123/instances](http://0.0.0.0:5000/chore/chore123/instances)
-    ```
-
-  - Request Body:
-
-    ```json
-    {
-      "start_date": "YYYY-MM-DD",
-      "end_date": "YYYY-MM-DD"
-    }
-    ```
-
-  - Response:
-
-    ```json
-    {
-      "message": "Chore instances generated successfully",
-      "instance_ids": ["instance-id-1", "instance-id-2"]
-    }
-    ```
-
-- `GET /chore/user/<user_id>/instances`
-
-  - Retrieves chore instances for a specific user within a date range.
-  - Example:
-
-    ```bash
-    curl "[http://0.0.0.0:5000/chore/user/user123/instances?start_date=2024-01-15&end_date=2024-01-22](http://0.0.0.0:5000/chore/user/user123/instances?start_date=2024-01-15&end_date=2024-01-22)"
-    ```
-
-  - Query Parameters:
-    - `start_date`: Start date (YYYY-MM-DD)
-    - `end_date`: End date (YYYY-MM-DD)
-  - Response:
-
-    ```json
-    [
-        {
-            "instance_id": "instance-id-1",
-            "chore_id": "chore-id",
-            "date": "YYYY-MM-DD",
-            "status": "pending" or "completed"
-        },
-        // ...
-    ]
-    ```
-
-- `GET /chore/instances/<instance_id>`
-
-  - Retrieves a specific chore instance.
-  - Example: `curl http://0.0.0.0:5000/chore/instances/instance123`
-  - Response:
-
-    ```json
-    {
-        "instance_id": "instance-id",
-        "chore_id": "chore-id",
-        "date": "YYYY-MM-DD",
-        "status": "pending" or "completed"
-    }
-    ```
-
-- `PUT /chore/instances/<instance_id>`
-
-  - Updates a chore instance (e.g., to mark it as completed).
-  - Example:
-
-    ```bash
-    curl -X PUT -H "Content-Type: application/json" -d '{"status":"completed"}' [http://0.0.0.0:5000/chore/instances/instance123](http://0.0.0.0:5000/chore/instances/instance123)
-    ```
-
-  - Request Body:
-
-    ```json
-    {
-      "status": "completed"
-    }
-    ```
-
-  - Response:
-
-    ```json
-    {
-      "message": "Chore instance updated successfully"
-    }
-    ```
-
-- `GET /chore/house/<house_id>`
-  - Retrieves all chores for a given house.
-  - Example: `curl http://0.0.0.0:5000/chore/house/house123`
-  - Response:
-    ```json
-    [
-      {
-        "chore_id": "chore1",
-        "description": "Clean the bathroom",
-        "assigned_to": ["user1", "user2"]
-        // ... other chore properties
-      },
-      {
-        "chore_id": "chore2",
-        "description": "Take out the trash",
-        "assigned_to": ["user3"]
-        // ... other chore properties
-      }
-    ]
-    ```
+## How to Add New Tests
+- Create a test file inside the related folder you are unit testing
+- Go to .github\workflows\python-app.yml and add the command to run your test file to the run section at the bottom (i.e. python -m pytest ./choreService/choreServiceTests.py)
