@@ -15,7 +15,7 @@ def upsert_user(db, data):
         return jsonify({"id": data.get('id')}) 
     except Exception as e:
         print(f"Error creating user: {e}")
-        return None
+        return jsonify({'error': 'Could not upsert user'}), 500
     
 
 # /// Un-Implemented Functions /// #
@@ -44,4 +44,4 @@ def get_user(db, user_id):
             return None
     except Exception as e:
         print(f"Error getting user: {e}")
-        return None
+        return jsonify({'error': "Could not get user"}), 500

@@ -158,7 +158,7 @@ def upsert_user_route():
         Request body example:
             {'email': 'example@gmail.com',
                 'houseID': 'alskdjfl',
-                'id': 'NisesS
+                'id': 'NisesS'
             }
     """
     data = request.get_json()
