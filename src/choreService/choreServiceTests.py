@@ -14,15 +14,12 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from userService.user_utils import get_user
-from choreService.chore_routes import (chore_bp, create_chore_route, create_chore, get_chore_instances_by_user_route, generate_chore_instances_route)
+# from userService.user_utils import get_user
+# from choreService.chore_routes import (chore_bp, create_chore_route, create_chore, get_chore_instances_by_user_route, generate_chore_instances_route)
 from choreService.chore_utils import (
-    create_chore,
-    generate_chore_instances,
+    upsert_chore,
+    upsert_chore_instance,
     get_chore_instances_by_user,
-    get_chore_instance,
-    update_chore_instance,
-    get_chores_by_house,
 )
 from flask import Flask
 
@@ -33,266 +30,99 @@ class TestChoreService(unittest.TestCase):
     """
 
     def setUp(self):
-        """
-        Set up mocks for Firebase Admin SDK and Firestore.
-        """
-        self.initialize_app_patch = patch('firebase_admin.initialize_app')
-        self.mock_initialize_app = self.initialize_app_patch.start()
-
-        self.mock_firestore_client = MagicMock()
+        # Mock Firestore client and collections
         self.mock_db = MagicMock()
-        self.mock_firestore_client.return_value = self.mock_db
+        self.mock_houses_collection = MagicMock()
+        self.mock_house_doc = MagicMock()
+        self.mock_chore_instances_collection = MagicMock()
+        self.mock_chore_instance_doc = MagicMock()
+        self.mock_chores_collection = MagicMock()
+        self.mock_chore_doc = MagicMock()
 
-        self.firestore_client_patch = patch('google.cloud.firestore.Client')
-        self.firestore_client_patch.start().return_value = self.mock_firestore_client
+        # Setup collection/document chaining mocks
+        self.mock_db.collection.return_value = self.mock_houses_collection
+        self.mock_houses_collection.document.return_value = self.mock_house_doc
+        self.mock_house_doc.collection.side_effect = lambda name: {
+            'choreInstances': self.mock_chore_instances_collection,
+            'chores': self.mock_chores_collection
+        }[name]
 
-        self.mock_collection = MagicMock()
-        self.mock_document = MagicMock()
-        self.mock_db.collection.return_value = self.mock_collection
-        self.mock_collection.document.return_value = self.mock_document
+        self.mock_chore_instances_collection.document.return_value = self.mock_chore_instance_doc
+        self.mock_chores_collection.document.return_value = self.mock_chore_doc
 
-        self.mock_document_snapshot = MagicMock()
-        self.mock_document.get.return_value = self.mock_document_snapshot
+    @patch('choreService.chore_utils.jsonify')
+    def test_upsert_chore_instance_success(self, mock_jsonify):
+        data = {'id': 'inst1', 'choreID': 'ch1'}
+        mock_jsonify.side_effect = lambda x: x  # return argument for easy checking
 
-        self.app = Flask(__name__)
-        self.app.config['FIRESTORE_DB'] = self.mock_db
-        self.app_context = self.app.app_context() 
-        self.app_context.push()
-        self.request_context = MagicMock()
+        result = upsert_chore_instance(self.mock_db, data, 'house1')
 
-        self.mock_auth = MagicMock()
-        self.auth_patch = patch('firebase_admin.auth', self.mock_auth)
-        self.auth_patch.start()
+        self.mock_db.collection.assert_called_with('houses')
+        self.mock_houses_collection.document.assert_called_with('house1')
+        self.mock_house_doc.collection.assert_called_with('choreInstances')
+        self.mock_chore_instances_collection.document.assert_called_with('inst1')
+        self.mock_chore_instance_doc.set.assert_called_with(data)
+        self.assertEqual(result, {'id': 'inst1'})
 
-        self.mock_get_user = MagicMock()
-        self.get_user_patch = patch('src.userService.user_utils.get_user', self.mock_get_user)
-        self.get_user_patch.start()
+    @patch('choreService.chore_utils.jsonify')
+    def test_upsert_chore_instance_failure(self, mock_jsonify):
+        data = {'id': 'inst1'}
+        self.mock_chore_instances_collection.document.side_effect = Exception('fail')
+        mock_jsonify.side_effect = lambda x, code=None: (x, code) if code else x
 
-    def tearDown(self):
-        """
-        Clean up mocks.
-        """
-        self.initialize_app_patch.stop()
-        self.firestore_client_patch.stop()
-        self.get_user_patch.stop()
+        result = upsert_chore_instance(self.mock_db, data, 'house1')
 
-    def test_create_chore_success(self):
-        """
-        Test successful creation of a chore.
-        """
-        self.mock_document.id = 'new_chore_id'
-        result = create_chore(
-            self.mock_db,
-            'house123',
-            ' уборка', # ngl I wonder what Firebase can and can't store
-            ['user123', 'user456'],
-            'weekly',
-            {'day_of_week': 0},
-            'user123',
-            'subgroup789',
-        )
-        self.assertEqual(result, 'new_chore_id')
-        self.mock_collection.document.assert_called_once()
-        self.mock_document.set.assert_called_once_with({
-            'house_id': 'house123',
-            'description': ' уборка',
-            'assigned_to': ['user123', 'user456'],
-            'schedule_type': 'weekly',
-            'schedule_data': {'day_of_week': 0},
-            'created_at': firestore.SERVER_TIMESTAMP,
-            'created_by': 'user123',
-            'subgroup_id': 'subgroup789',
-            'name': ' уборка',
-            'is_active': True,
-        })
+        self.assertEqual(result, ({'error': 'Could not upsert chore instance'}, 400))
 
-    def test_create_chore_failure(self):
-        """
-        Test failure to create a chore.
-        """
-        self.mock_document.set.side_effect = Exception('Failed to create chore')
-        result = create_chore(
-            self.mock_db,
-            'house123',
-            ' уборка',
-            ['user123', 'user456'],
-            'weekly',
-            {'day_of_week': 0},
-            'user123',
-            'subgroup789',
-        )
-        self.assertIsNone(result)
+    @patch('choreService.chore_utils.jsonify')
+    def test_upsert_chore_success(self, mock_jsonify):
+        data = {'id': 'ch1', 'name': 'Clean'}
+        mock_jsonify.side_effect = lambda x: x
 
-    def test_generate_chore_instances_success(self):
-        """
-        Test successful generation of chore instances.
-        """
-        self.mock_document_snapshot.exists = True
-        self.mock_document_snapshot.to_dict.return_value = {
-            'schedule_type': 'weekly',
-            'schedule_data': {'day_of_week': 0},
-            'assigned_to': ['user123', 'user456'],
-        }
-        self.mock_document.id = 'instance1'
-        self.mock_collection.document.return_value = self.mock_document
+        result = upsert_chore(self.mock_db, data, 'house1')
 
-        start_date = datetime(2024, 1, 1)
-        end_date = datetime(2024, 1, 31)
-        result = generate_chore_instances(self.mock_db, 'chore123', start_date, end_date)
-        self.assertIsInstance(result, list)
-        for item in result:
-            self.assertIsInstance(item, str)
+        self.mock_db.collection.assert_called_with('houses')
+        self.mock_houses_collection.document.assert_called_with('house1')
+        self.mock_house_doc.collection.assert_called_with('chores')
+        self.mock_chores_collection.document.assert_called_with('ch1')
+        self.mock_chore_doc.set.assert_called_with(data)
+        self.assertEqual(result, {'id': 'ch1'})
 
-    def test_generate_chore_instances_chore_not_found(self):
-        """
-        Test when the chore is not found.
-        """
-        self.mock_document_snapshot.exists = False
-        start_date = datetime(2024, 1, 1)
-        end_date = datetime(2024, 1, 31)
-        result = generate_chore_instances(self.mock_db, 'chore123', start_date, end_date)
-        self.assertEqual(result, [])
+    @patch('choreService.chore_utils.jsonify')
+    def test_upsert_chore_failure(self, mock_jsonify):
+        data = {'id': 'ch1'}
+        self.mock_chores_collection.document.side_effect = Exception('fail')
+        mock_jsonify.side_effect = lambda x, code=None: (x, code) if code else x
 
-    def test_generate_chore_instances_invalid_schedule_type(self):
-        """
-        Test with an invalid schedule type.
-        """
-        self.mock_document_snapshot.exists = True
-        self.mock_document_snapshot.to_dict.return_value = {
-            'schedule_type': 'invalid',
-            'schedule_data': {},
-            'assigned_to': ['user123']
-        }
-        start_date = datetime(2024, 1, 1)
-        end_date = datetime(2024, 1, 31)
-        result = generate_chore_instances(self.mock_db, 'chore123', start_date, end_date)
-        self.assertEqual(result, [])
+        result = upsert_chore(self.mock_db, data, 'house1')
 
-    # TODO: Currently non-functional, needs to be fixed after get_chore_instances_by_user()
-    # is updated to fit new schema.
-    # def test_get_chore_instances_by_user_success(self):
-    #     """
-    #     Test successful retrieval of chore instances for a user.
-    #     """
-    #     mock_query = MagicMock()
-    #     self.mock_collection.where.return_value = mock_query
-    #     mock_query_result = [
-    #         MagicMock(to_dict=lambda: {'chore_id': 'chore1', 'date': datetime(2024, 1, 15)}),
-    #         MagicMock(to_dict=lambda: {'chore_id': 'chore2', 'date': datetime(2024, 1, 20)}),
-    #     ]
-    #     mock_query.get.return_value = mock_query_result
-    #     start_date = datetime(2024, 1, 1)
-    #     end_date = datetime(2024, 1, 31)
-    #     result = get_chore_instances_by_user(self.mock_db, 'user123', start_date, end_date)
-    #     self.assertEqual(result, [
-    #         {'chore_id': 'chore1', 'date': datetime(2024, 1, 15)},
-    #         {'chore_id': 'chore2', 'date': datetime(2024, 1, 20)},
-    #     ])
+        self.assertEqual(result, ({'error': 'Could not upsert chore'}, 400))
 
-    def test_get_chore_instances_by_user_no_instances(self):
-        """
-        Test when there are no chore instances for the user in the given range.
-        """
-        mock_query = MagicMock()
-        self.mock_collection.where.return_value = mock_query
-        mock_query.get.return_value = []
-        start_date = datetime(2024, 1, 1)
-        end_date = datetime(2024, 1, 31)
-        result = get_chore_instances_by_user(self.mock_db, 'user123', start_date, end_date)
-        self.assertEqual(result, [])
+    def test_get_chore_instances_by_user_success(self):
+        # setup mock query results
+        mock_instance1 = MagicMock()
+        mock_instance1.to_dict.return_value = {'id': 'inst1', 'assignee': 'user1'}
+        mock_instance2 = MagicMock()
+        mock_instance2.to_dict.return_value = {'id': 'inst2', 'assignee': 'user1'}
 
-    def test_get_chore_instances_by_user_exception(self):
-        """
-        Test the case where an exception is raised during the query.
-        """
-        mock_query = MagicMock()
-        self.mock_collection.where.return_value = mock_query
-        mock_query.get.side_effect = Exception("Simulated error")
-        start_date = datetime(2024, 1, 1)
-        end_date = datetime(2024, 1, 31)
-        result = get_chore_instances_by_user(self.mock_db, 'user123', start_date, end_date)
-        self.assertEqual(result, [])
+        mock_collection = MagicMock()
+        mock_collection.where.return_value.get.return_value = [mock_instance1, mock_instance2]
 
-    def test_get_chore_instance_success(self):
-        """
-        Test successful retrieval of a chore instance.
-        """
-        self.mock_document_snapshot.exists = True
-        self.mock_document_snapshot.to_dict.return_value = {'chore_id': 'chore123', 'date': datetime(2024, 1, 15)}
-        result = get_chore_instance(self.mock_db, 'instance123')
-        self.assertEqual(result, {'chore_id': 'chore123', 'date': datetime(2024, 1, 15)})
+        self.mock_db.collection.return_value = mock_collection
 
-    def test_get_chore_instance_not_found(self):
-        """
-        Test when the chore instance is not found.
-        """
-        self.mock_document_snapshot.exists = False
-        result = get_chore_instance(self.mock_db, 'instance123')
-        self.assertIsNone(result)
+        results = get_chore_instances_by_user(self.mock_db, 'user1')
 
-    def test_get_chore_instance_exception(self):
-        """
-        Test the case where an exception is raised.
-        """
-        self.mock_document.get.side_effect = Exception("Simulated error")
-        result = get_chore_instance(self.mock_db, 'instance123')
-        self.assertIsNone(result)
+        self.mock_db.collection.assert_called_with('choreInstances')
+        mock_collection.where.assert_called_with('assignee', '==', 'user1')
+        self.assertEqual(results, [{'id': 'inst1', 'assignee': 'user1'}, {'id': 'inst2', 'assignee': 'user1'}])
 
-    def test_update_chore_instance_success(self):
-        """
-        Test successful update of a chore instance.
-        """
-        result = update_chore_instance(self.mock_db, 'instance123', {'completed': True})
-        self.assertTrue(result)
-        self.mock_collection.document.assert_called_once_with('instance123')
-        self.mock_document.update.assert_called_once_with({'completed': True})
+    def test_get_chore_instances_by_user_failure(self):
+        mock_collection = MagicMock()
+        mock_collection.where.side_effect = Exception('fail')
+        self.mock_db.collection.return_value = mock_collection
 
-    def test_update_chore_instance_exception(self):
-        """
-        Test the case where an exception is raised during the update.
-        """
-        self.mock_document.update.side_effect = Exception("Simulated error")
-        result = update_chore_instance(self.mock_db, 'instance123', {'completed': True})
-        self.assertFalse(result)
-
-    def test_get_chores_by_house_success(self):
-        """
-        Test successful retrieval of chores for a house.
-        """
-        mock_query = MagicMock()
-        self.mock_collection.where.return_value = mock_query
-        mock_query_result = [
-            MagicMock(to_dict=lambda: {'chore_id': 'chore1', 'description': ' уборка'}),
-            MagicMock(to_dict=lambda: {'chore_id': 'chore2', 'description': ' готовка'}),
-        ]
-        mock_query.get.return_value = mock_query_result
-        result = get_chores_by_house(self.mock_db, 'house123')
-        self.assertEqual(result, [
-            {'chore_id': 'chore1', 'description': ' уборка'},
-            {'chore_id': 'chore2', 'description': ' готовка'},
-        ])
-        self.mock_collection.where.assert_called_once_with('house_id', '==', 'house123')
-
-    def test_get_chores_by_house_no_chores(self):
-        """
-        Test when there are no chores for the house.
-        """
-        mock_query = MagicMock()
-        self.mock_collection.where.return_value = mock_query
-        mock_query.get.return_value = []
-        result = get_chores_by_house(self.mock_db, 'house123')
-        self.assertEqual(result, [])
-
-    def test_get_chores_by_house_exception(self):
-        """
-        Test the case where an exception is raised.
-        """
-        mock_query = MagicMock()
-        self.mock_collection.where.return_value = mock_query
-        mock_query.get.side_effect = Exception("Simulated error")
-        result = get_chores_by_house(self.mock_db, 'house123')
-        self.assertEqual(result, [])
-
+        results = get_chore_instances_by_user(self.mock_db, 'user1')
+        self.assertEqual(results, [])
 
 if __name__ == '__main__':
     unittest.main()
