@@ -131,6 +131,22 @@ def upsert_subgroup_route(house_id):
         return jsonify({'error': 'Subgroup could not be added'}), 400
     
 
+@app.route('/upsert-swap-<house_id>', methods=['POST'])
+def upsert_swap_route(house_id):
+    """
+        Creates a new swap under a house in the database's house
+        collection. If the swap already exists, then non-empty fields
+        will be updated instead.
+    """
+    try:
+        data = request.get_json()
+        house_ref = HOUSES.document(house_id)
+        swap_ref = house_ref.collection('swaps')
+        swap_ref.document(data.get('id')).set(data)
+        return jsonify({'id': data.get('id')}) 
+    except Exception as e:
+        return jsonify({'error': 'Swap could not be added'}), 400
+
 
 @app.route('/upsert-house', methods=['POST'])
 def upsert_house_route():
@@ -214,6 +230,18 @@ def delete_subgroup_route(house_id):
     sub_ref.delete()
     return jsonify({"id": str(data.get('id'))}) 
 
+@app.route('/delete-swap-<house_id>', methods=['POST'])
+def delete_swap_route(house_id):
+    """
+        Deletes a swap in the database's house collection.
+        The id field must be non-empty.
+    """
+    data = request.get_json()
+    house_ref = HOUSES.document(house_id)
+    sub_ref = house_ref.collection('swaps').document(data.get('id'))
+    sub_ref.delete()
+    return jsonify({"id": str(data.get('id'))}) 
+
 @app.route('/delete-member-<house_id>', methods=['POST'])
 def delete_member_route(house_id):
     """
@@ -257,6 +285,8 @@ def delete_house_route(house_id):
     delete_collection(subgroups_ref)
     chores_ref = house_ref.collection('chores')
     delete_collection(chores_ref)
+    swaps_ref = house_ref.collection('swaps')
+    delete_collection(swaps_ref)
     # finally, delete house
     house_ref.delete()
     return jsonify({"id": str(house_id)}) 
@@ -311,6 +341,23 @@ def get_house_chores_route(house_id):
         chore_list[chore.id] = chore.to_dict()
 
     return chore_list
+
+@app.route('/get-house-<house_id>-swaps', methods=['GET'])
+def get_house_swaps_route(house_id):
+    """
+        Retrieves a house's swaps collection.
+        Returns None if house_id is not in the database.
+    """
+    house_ref = HOUSES.document(house_id)
+    house = house_ref.get()
+    if not house.exists:
+        return jsonify({'error': 'House does not exist'}), 400
+    swaps = house_ref.collection('swaps').stream()
+    swaps_list = {}
+    for swap in swaps:
+        swaps_list[swap.id] = swap.to_dict()
+
+    return swaps_list
 
 @app.route('/get-house-<house_id>-chore-instances', methods=['GET'])
 def get_house_chore_instances_routes(house_id):
