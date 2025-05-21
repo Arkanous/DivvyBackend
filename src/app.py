@@ -92,16 +92,15 @@ def upsert_chore_instance_route(house_id):
 
 @app.route('/upsert-chore-<house_id>', methods=['POST'])
 def upsert_chore_route(house_id):
-    # TODO: rename choreID to id and all references of it
     """
         Creates a new chore under a house in the database's house
         collection. If the chore already exists, then non-empty fields
         will be updated instead.
         The houseID field must be a valid house ID.
-        The choreID field must be non-empty.
+        The id field must be non-empty.
         Request body example:
-            {'houseID': 'aslkdf',
-                'choreID': '12lcxzv',
+            {
+                'id': '12lcxzv',
                 'assignees': [
                     'asdnzxvcie'],
                 'description': 'A useful desc.',

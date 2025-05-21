@@ -6,22 +6,6 @@ from flask import jsonify
 # /// Chore Utility Functions /// #
     # Primarily called by app.py's public routes
 
-def upsert_chore_instance(db, data, house_id):
-    # TODO: lots to do here, but definitely need to make sure that choreID is valid
-    try:
-        HOUSES = db.collection('houses')
-        house_ref = HOUSES.document(house_id)
-
-        CHORE_INSTANCES = house_ref.collection('choreInstances')
-        chore_inst_ref = CHORE_INSTANCES.document(data.get('id'))
-    
-        chore_inst_ref.set(data)
-        return jsonify({'id': data.get('id')}) 
-    except Exception as e:
-        print(f"Error creating/updating chore instance: {e}")
-        return jsonify({'error': 'Could not upsert chore instance'}), 400
-    
-
 def upsert_chore(db, data, house_id):
     try:
         HOUSES = db.collection('houses')
@@ -33,7 +17,22 @@ def upsert_chore(db, data, house_id):
         return jsonify({'id': data.get('id')}) 
     except Exception as e:
         print(f"Error creating/updating chore: {e}")
-        return jsonify({'error': 'Could not upsert chore'}), 400
+        return jsonify({'error': 'Could not upsert chore'}), 500
+
+def upsert_chore_instance(db, data, house_id):
+    # TODO: lots to do here, but definitely need to make sure that choreID is valid
+    try:
+        HOUSES = db.collection('houses')
+        house_ref = HOUSES.document(house_id)
+
+        CHORE_INSTANCES = house_ref.collection('choreInstances')
+        chore_inst_ref = CHORE_INSTANCES.document(data.get('id'))
+    
+        chore_inst_ref.set(data)
+        return jsonify({'id': data.get('id')})
+    except Exception as e:
+        print(f"Error creating/updating chore instance: {e}")
+        return jsonify({'error': 'Could not upsert chore instance'}), 500
 
 
 # /// Un-Implemented Functions /// #
