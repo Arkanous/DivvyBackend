@@ -102,7 +102,7 @@ DivvyBackend/
 │   │   └── firebaseUtilsTests.py # Unit tests for userService  
 │   └── app.py                  # The main application entry point and API routes  
 ├── .gitignore                  # Files and directories to be ignored by Git  
-├── requirements.txt            # Python dependencies 
+├── requirements.txt            # Python dependencies  
 └── README.md                   # This README file  
 
 ## Running the System
@@ -299,9 +299,15 @@ PUT /chore/instances/<instance_id>
   }
 
 ## How to Add New Tests
-- Create a test file inside the related folder you are unit testing
-- Go to .github\workflows\python-app.yml and add the command to run your test file to the run section at the bottom (i.e. python -m pytest ./choreService/choreServiceTests.py)
+- Create a test file inside the related folder you are unit testing.
+- Go to .github\workflows\python-app.yml and add the command to run your test file to the run section at the bottom (i.e. python -m pytest ./choreService/choreServiceTests.py).
+- For examples of existing tests, look at (inside ./src) ./houseService/houseServiceTests.py, ./choreService/choreServiceTests.py, and ./userService/userServiceTests.py.
+- We use the unittest.mock Python library to mock the database for testing. Ensure that you have the following statements at the top of your test file:
+```python
+import unittest
+from unittest.mock import MagicMock, patch
+```
 
 ## How to Build a Release of the Software
-- There are no steps yet until we add Digital Ocean to host our services
-- For release testing, make sure you test not only with curling, unit tests, but also opening the frontend and testing the connection locally
+- There are no steps yet until we add Digital Ocean to host our services.
+- For release testing, make sure you test not only with curling and unit tests, but also opening the frontend and testing the connection locally.
