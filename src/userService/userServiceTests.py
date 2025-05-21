@@ -94,7 +94,7 @@ class TestUserService(unittest.TestCase):
 
     def test_upsert_user_success(self):
         """
-        Test successful creation of a user
+        Test successful creation/update of a user
         """
         result = upsert_user(self.mock_db,
                              {'email': 'fake@divvy.com',
@@ -109,7 +109,7 @@ class TestUserService(unittest.TestCase):
     
     def test_upsert_user__failure(self):
         """
-        Test failure to create user due to an exception
+        Test failure to create/update user due to an exception
         """
         self.mock_document.set.side_effect = Exception('Failed to create user')
         result = upsert_user(self.mock_db,
