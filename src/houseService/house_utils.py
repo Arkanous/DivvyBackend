@@ -31,7 +31,7 @@ def create_house(db, data):
         return jsonify({"id": str(house_id)}) 
     except Exception as e:
         print(f"Error creating house: {e}")
-        return None
+        return jsonify({'error': 'Error creating house'}), 500
 
 
 def get_house(db, house_id):
@@ -52,9 +52,9 @@ def get_house(db, house_id):
         if house.exists:
             return house.to_dict()
         else:
-            return jsonify({'error': 'House with code {join_code} not found'}), 400
+            return jsonify({'error': f'House with id {house_id} not found'}), 400
     except Exception as e:
-        return jsonify({'error': 'e'}), 400
+        return jsonify({'error': 'e'}), 500
 
 
 # coll_ref is the collection reference to delete
