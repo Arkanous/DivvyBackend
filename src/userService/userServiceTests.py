@@ -11,7 +11,6 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-# from userService.user_routes import (user_bp, get_user_route, create_user_route)
 from userService.user_utils import (get_user, upsert_user)
 
 
@@ -67,7 +66,7 @@ class TestUserService(unittest.TestCase):
         self.mock_document_snapshot.exists = True
         self.mock_document_snapshot.to_dict.return_value = {'email': 'test@example.com', 'name': 'Test User'}
         result = get_user(self.mock_db, 'user123')
-        self.assertEqual(result, {'email': 'test@example.com', 'name': 'Test User'})
+        self.assertDictEqual(result, {'email': 'test@example.com', 'name': 'Test User'})
         self.mock_db.collection.assert_called_once_with('users')
         self.mock_collection.document.assert_called_once_with('user123')
         self.mock_document.get.assert_called_once()
