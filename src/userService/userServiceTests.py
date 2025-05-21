@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import firebase_admin
 from firebase_admin import credentials, firestore, auth 
 import google.cloud.firestore
-from flask import Flask
+from flask import Flask, make_response, jsonify
 import sys
 import os
 
@@ -11,8 +11,7 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-from userService.user_routes import (user_bp, get_user_route, create_user_route)
-from userService.user_utils import (get_user, create_user)
+from userService.user_utils import (get_user, upsert_user)
 
 
 class TestUserService(unittest.TestCase):
@@ -44,7 +43,7 @@ class TestUserService(unittest.TestCase):
 
         self.app = Flask(__name__)
         self.app.config['FIRESTORE_DB'] = self.mock_db
-        self.app_context = self.app.app_context() 
+        self.app_context = self.app.app_context()
         self.app_context.push()
         self.request_context = MagicMock()
 
@@ -67,7 +66,8 @@ class TestUserService(unittest.TestCase):
         self.mock_document_snapshot.exists = True
         self.mock_document_snapshot.to_dict.return_value = {'email': 'test@example.com', 'name': 'Test User'}
         result = get_user(self.mock_db, 'user123')
-        self.assertEqual(result, {'email': 'test@example.com', 'name': 'Test User'})
+        self.assertDictEqual(result, {'email': 'test@example.com', 'name': 'Test User'})
+        self.mock_db.collection.assert_called_once_with('users')
         self.mock_collection.document.assert_called_once_with('user123')
         self.mock_document.get.assert_called_once()
 
@@ -78,6 +78,9 @@ class TestUserService(unittest.TestCase):
         self.mock_document_snapshot.exists = False
         result = get_user(self.mock_db, 'user123')
         self.assertIsNone(result)
+        self.mock_db.collection.assert_called_once_with('users')
+        self.mock_collection.document.assert_called_once_with('user123')
+        self.mock_document.get.assert_called_once()
 
     def test_get_user_failure(self):
         """
@@ -85,27 +88,40 @@ class TestUserService(unittest.TestCase):
         """
         self.mock_document.get.side_effect = Exception('Failed to get user')
         result = get_user(self.mock_db, 'user123')
-        self.assertIsNone(result)
+        self.assertDictEqual(result[0].get_json(), {'error': "Could not get user"})
+        self.assertEqual(result[1], 500)
 
-    def test_create_user_success(self):
+    def test_upsert_user_success(self):
         """
-        Test successful creation of a user.
+        Test successful creation/update of a user
         """
-        result = create_user(self.mock_db, 'user123', 'test@example.com', 'Test User')
-        self.assertTrue(result)
-        self.mock_collection.document.assert_called_once_with('user123')
-        self.mock_document.set.assert_called_once_with({
-            'email': 'test@example.com',
-            'name': 'Test User'
-        })
-
-    def test_create_user_failure(self):
+        result = upsert_user(self.mock_db,
+                             {'email': 'fake@divvy.com',
+                                      'houseID': 'asdkfnxc',
+                                      'id': 'fakeID'})
+        self.assertDictEqual(result.get_json(), {'id': 'fakeID'})
+        self.mock_db.collection.assert_called_once_with('users')
+        self.mock_collection.document.assert_called_once_with('fakeID')
+        self.mock_document.set.assert_called_once_with({'email': 'fake@divvy.com',
+                                                        'houseID': 'asdkfnxc',
+                                                        'id': 'fakeID'})        
+    
+    def test_upsert_user__failure(self):
         """
-        Test failure to create a user due to an exception.
+        Test failure to create/update user due to an exception
         """
         self.mock_document.set.side_effect = Exception('Failed to create user')
-        result = create_user(self.mock_db, 'user123', 'test@example.com', 'Test User')
-        self.assertFalse(result)
+        result = upsert_user(self.mock_db,
+                             {'email': 'fake@divvy.com',
+                                      'houseID': 'asdkfnxc',
+                                      'id': 'fakeID'})
+        self.assertDictEqual(result[0].get_json(), {'error': 'Could not upsert user'})
+        self.assertEqual(result[1], 500)
+        self.mock_db.collection.assert_called_once_with('users')
+        self.mock_collection.document.assert_called_once_with('fakeID')
+        self.mock_document.set.assert_called_once_with({'email': 'fake@divvy.com',
+                                                        'houseID': 'asdkfnxc',
+                                                        'id': 'fakeID'})
 
 if __name__ == '__main__':
      unittest.main()
