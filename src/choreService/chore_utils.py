@@ -54,9 +54,9 @@ def get_chore_instances_by_user(db, user_id, start_date, end_date):
     """
     try:
         instances = []
-        instances_ref = db.collection('Task')
+        instances_ref = db.collection('choreInstances')
         #  query for instances assigned to the user AND within the date range.
-        query = instances_ref.where('assigned_to', '==', user_id).where('date', '>=', start_date).where('date', '<=', end_date)
+        query = instances_ref.where('assignee', '==',user_id)
         results = query.get()
         for instance in results:
             instances.append(instance.to_dict())
@@ -64,7 +64,6 @@ def get_chore_instances_by_user(db, user_id, start_date, end_date):
     except Exception as e:
         print(f"Error getting chore instances for user {user_id}: {e}")
         return []
-
 
 def get_chore_instance(db, instance_id):
     """
