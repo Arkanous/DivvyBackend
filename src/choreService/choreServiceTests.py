@@ -17,11 +17,7 @@ if project_root not in sys.path:
 from userService.user_utils import get_user
 from choreService.chore_utils import (
     upsert_chore,
-    upsert_chore_instance,
-    get_chore_instances_by_user,
-    get_chore_instance,
-    update_chore_instance,
-    get_chores_by_house,
+    upsert_chore_instance
 )
 from flask import Flask
 
@@ -170,6 +166,10 @@ class TestChoreService(unittest.TestCase):
     
     
 
+    # /// Deprecated Functions /// #
+        # These tests were written for old routes and no longer work.
+        # They are left here for reference in making new tests should the
+        # need arise.
 
     # def test_generate_chore_instances_success(self):
     #     """
@@ -216,8 +216,6 @@ class TestChoreService(unittest.TestCase):
     #     result = generate_chore_instances(self.mock_db, 'chore123', start_date, end_date)
     #     self.assertEqual(result, [])
 
-    # TODO: Currently non-functional, needs to be fixed after get_chore_instances_by_user()
-    # is updated to fit new schema.
     # def test_get_chore_instances_by_user_success(self):
     #     """
     #     Test successful retrieval of chore instances for a user.
