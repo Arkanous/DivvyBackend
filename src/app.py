@@ -11,7 +11,7 @@ from google.cloud.firestore_v1 import FieldFilter
 
 from houseService.house_utils import create_house, delete_collection, get_house
 from userService.user_utils import upsert_user
-from choreService.chore_utils import upsert_chore, upsert_chore_instance
+from choreService.chore_utils import get_chore_instances_by_user, upsert_chore, upsert_chore_instance, get_chore_instances_by_house
 
 # Load .env file variables
 load_dotenv()
@@ -113,6 +113,34 @@ def upsert_chore_route(house_id):
     """
     data = request.get_json()
     return upsert_chore(db, data, house_id)
+
+@app.route('/get-user-chores', methods=['POST'])
+def get_chore_by_user():
+    # TODO: rename choreID to id and all references of it
+    """
+        Creates a new chore under a house in the database's house
+        collection. If the chore already exists, then non-empty fields
+        will be updated instead.
+        Body:
+        { "user_id": <user_id>, "house_id":  <house_id> }
+        Request Example: Invoke-WebRequest -Uri http://127.0.0.1:5000/get-user-chores -Method Post -Headers @{'Content-Type'='application/json'} -Body '{ "user_id": "Iqha69gogtMJQuoWitSVgQFqI6V2", "house_id":  "ff76c4e3-64e7-4ca2-b4e6-0d7c700e05d4" }'
+    """
+    data = request.get_json()
+    return get_chore_instances_by_user(db, data)
+
+@app.route('/get-house-chores', methods=['POST'])
+def get_chore_by_house():
+    # TODO: rename choreID to id and all references of it
+    """
+        Creates a new chore under a house in the database's house
+        collection. If the chore already exists, then non-empty fields
+        will be updated instead.
+        Body:
+        {  "house_id":  <house_id> }
+        Request Example: Invoke-WebRequest -Uri http://127.0.0.1:5000/get-house-chores -Method Post -Headers @{'Content-Type'='application/json'} -Body '{ "house_id":  "ff76c4e3-64e7-4ca2-b4e6-0d7c700e05d4" }'
+    """
+    data = request.get_json()
+    return get_chore_instances_by_house(db, data)
 
 @app.route('/upsert-subgroup-<house_id>', methods=['POST'])
 def upsert_subgroup_route(house_id):

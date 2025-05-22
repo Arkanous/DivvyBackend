@@ -32,30 +32,55 @@ def upsert_chore(db, data, house_id):
         print(f"Error creating/updating chore: {e}")
         return jsonify({'error': 'Could not upsert chore'}), 400
 
-def get_chore_instances_by_user(db, user_id):
+def get_chore_instances_by_user(db, data):
     """
     Retrieves chore instances for a specific user within a date range.
 
     Args:
         db (firestore.Client): The Firestore client.
-        user_id (str): The ID of the user.
-        start_date (datetime): The start date for the query.
-        end_date (datetime): The end date for the query.
+        data: json of user_id and house_id
 
     Returns:
         list: A list of chore instance dictionaries, or an empty list on error.
     """
     try:
         instances = []
-        instances_ref = db.collection('choreInstances')
-        #  query for instances assigned to the user AND within the date range.
-        query = instances_ref.where('assignee', '==',user_id)
+        houses_ref = db.collection('houses')
+        house_ref = houses_ref.document(data.get('house_id'))
+        chore_instances_ref = house_ref.collection('choreInstances')
+
+        query = chore_instances_ref.where(
+            filter=firestore.FieldFilter('assignee', '==', data.get('user_id'))
+        )
         results = query.get()
         for instance in results:
             instances.append(instance.to_dict())
         return instances
     except Exception as e:
-        print(f"Error getting chore instances for user {user_id}: {e}")
+        print(f"Error getting chore instances for user {data.get('user_id')} in house {data.get('house_id')}: {e}")
+        return []
+    
+def get_chore_instances_by_house(db, data):
+    """
+    Retrieves chore instances for a specific user within a date range.
+
+    Args:
+        db (firestore.Client): The Firestore client.
+        data: json of house_id
+
+    Returns:
+        list: A list of chore instance dictionaries, or an empty list on error.
+    """
+    try:
+        instances = []
+        CHORE_INSTANCES = db.collection('houses').document(data.house_id).collection('choreInstances')
+
+        results = CHORE_INSTANCES.get()
+        for doc in results:
+            instances.append(doc.to_dict())
+        return instances
+    except Exception as e:
+        print(f"Error getting chore instances for house {data.get('house_id')}: {e}")
         return []
 
 
