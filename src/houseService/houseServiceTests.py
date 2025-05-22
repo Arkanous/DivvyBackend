@@ -9,25 +9,19 @@ from firebase_admin import credentials, firestore, auth
 import sys
 import os
 
-from flask import jsonify
-from app import app
+from flask import Flask, jsonify
 
 # Bad practice but tests won't work without it because Python Modules
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-from userService.user_utils import get_user 
-# Lines needed for Aiden's local version
-# from src.houseService.house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
-# from src.houseService.house_utils import (
+from userService.user_utils import get_user
 
-# Lines needed for Tony's local version
-from houseService.house_routes import (house_bp, create_house, create_house_route, get_house_route, get_houses_by_user_route, add_member_to_house_route)
 from houseService.house_utils import (
     create_house,
     get_house,
     add_member_to_house,
-    get_houses_by_user,
+    get_houses_by_user
 )
 
 
@@ -58,9 +52,11 @@ class TestHouseService(unittest.TestCase):
         self.mock_document_snapshot = MagicMock()
         self.mock_document.get.return_value = self.mock_document_snapshot
 
-        self.app = MagicMock()
-        self.app.config = {'FIRESTORE_DB': self.mock_db}
-        self.request_context = MagicMock()
+        self.app = Flask(__name__)
+        self.app.config['FIRESTORE_DB'] = self.mock_db
+        self.app_context = self.app.app_context() 
+        self.app_context.push()
+        self.request_context = MagicMock()        
 
         self.mock_auth = MagicMock()
         self.auth_patch = patch('firebase_admin.auth', self.mock_auth)
@@ -80,50 +76,48 @@ class TestHouseService(unittest.TestCase):
         self.get_user_patch.stop()
 
     def test_create_house_success(self):
-        with app.app_context():
-            """
-            Test successful creation of a house.
-            """
-            self.mock_document.id = 'new_house_id'
-            result = create_house(self.mock_db, {
-                'id': 'new_house_id', 
-                'name': 'Test House',
-                'members': ['user123'],
-                'dateCreated': firestore.SERVER_TIMESTAMP,
-                'imageID': 'abc123',
-                'joinCode': 'meaningless'
-            })
-            self.assertEqual(result, 'new_house_id')
-            self.mock_collection.document.assert_called_once()
-            self.mock_document.set.assert_called_once_with({
-                'id': 'new_house_id',
-                'name': 'Test House',
-                'members': ['user123'],
-                'dateCreated': firestore.SERVER_TIMESTAMP,
-                'imageID': 'abc123',
-                'joinCode': 'meaningless'
-            })
+        """
+        Test successful creation of a house.
+        """
+        self.mock_document.id = 'new_house_id'
+        result = create_house(self.mock_db, {
+            'id': 'new_house_id', 
+            'name': 'Test House',
+            'members': ['user123'],
+            'dateCreated': firestore.SERVER_TIMESTAMP,
+            'imageID': 'abc123',
+            'joinCode': 'meaningless'
+        })
+        self.assertEqual(result.get_json(), {'id': 'new_house_id'})
+        self.mock_collection.document.assert_called_once()
+        self.mock_document.set.assert_called_once_with({
+            'id': 'new_house_id',
+            'name': 'Test House',
+            'members': ['user123'],
+            'dateCreated': firestore.SERVER_TIMESTAMP,
+            'imageID': 'abc123',
+            'joinCode': 'meaningless'
+        })
 
     def test_create_house_failure(self):
-        with app.app_context():
-            """
-            Test failure to create a house.
-            """
-            self.mock_document.set.side_effect = Exception('Failed to create house')
-            result = create_house(self.mock_db, {'id': 'exid'})
-            self.assertIsNone(result)
+        """
+        Test failure to create a house.
+        """
+        self.mock_document.set.side_effect = Exception('Failed to create house')
+        result = create_house(self.mock_db, {'id': 'exid'})
+        self.assertDictEqual(result[0].get_json(), {'error': 'Error creating house'})
+        self.assertEqual(result[1], 500)
 
     def test_get_house_success(self):
-        with app.app_context():
-            """
-            Test successful retrieval of a house.
-            """
-            self.mock_document_snapshot.exists = True
-            self.mock_document_snapshot.to_dict.return_value = {'name': 'Test House', 'members': ['user123']}
-            result = get_house(self.mock_db, 'house123')
-            self.assertEqual(result, {'name': 'Test House', 'members': ['user123']})
-            self.mock_collection.document.assert_called_once_with('house123')
-            self.mock_document.get.assert_called_once()
+        """
+        Test successful retrieval of a house.
+        """
+        self.mock_document_snapshot.exists = True
+        self.mock_document_snapshot.to_dict.return_value = {'name': 'Test House', 'members': ['user123']}
+        result = get_house(self.mock_db, 'house123')
+        self.assertEqual(result, {'name': 'Test House', 'members': ['user123']})
+        self.mock_collection.document.assert_called_once_with('house123')
+        self.mock_document.get.assert_called_once()
 
     def test_get_house_not_found(self):
         """
@@ -131,7 +125,8 @@ class TestHouseService(unittest.TestCase):
         """
         self.mock_document_snapshot.exists = False
         result = get_house(self.mock_db, 'house123')
-        self.assertIsNone(result)
+        self.assertDictEqual(result[0].get_json(), {'error': 'House with id house123 not found'})
+        self.assertEqual(result[1], 400)
 
     def test_get_house_failure(self):
         """
@@ -139,7 +134,8 @@ class TestHouseService(unittest.TestCase):
         """
         self.mock_document.get.side_effect = Exception('Failed to get house')
         result = get_house(self.mock_db, 'house123')
-        self.assertIsNone(result)
+        self.assertDictEqual(result[0].get_json(), {'error': 'e'})
+        self.assertEqual(result[1], 500)
 
     def test_add_member_to_house_success(self):
         """
