@@ -80,7 +80,7 @@ def get_chore_instances_by_house(db, data):
     """
     try:
         instances = []
-        CHORE_INSTANCES = db.collection('houses').document(data.house_id).collection('choreInstances')
+        CHORE_INSTANCES = db.collection('houses').document(data.get('house_id')).collection('choreInstances')
 
         results = CHORE_INSTANCES.get()
         for doc in results:

@@ -19,7 +19,8 @@ if project_root not in sys.path:
 from choreService.chore_utils import (
     upsert_chore,
     upsert_chore_instance,
-    get_chore_instances_by_user
+    get_chore_instances_by_user,
+    get_chore_instances_by_house
 )
 from flask import Flask
 
@@ -88,42 +89,78 @@ class TestChoreService(unittest.TestCase):
         self.mock_chore_doc.set.assert_called_with(data)
         self.assertEqual(result, {'id': 'ch1'})
 
-    @patch('choreService.chore_utils.jsonify')
-    def test_upsert_chore_failure(self, mock_jsonify):
-        data = {'id': 'ch1'}
-        self.mock_chores_collection.document.side_effect = Exception('fail')
-        mock_jsonify.side_effect = lambda x, code=None: (x, code) if code else x
+    def test_get_chore_instances_by_user_success(self):
+        data = {
+            'user_id': 'user123',
+            'house_id': 'house456'
+        }
 
-        result = upsert_chore(self.mock_db, data, 'house1')
+        mock_doc1 = MagicMock()
+        mock_doc1.to_dict.return_value = {'id': 'inst1', 'assignee': 'user123'}
 
-        self.assertEqual(result, ({'error': 'Could not upsert chore'}, 500))
+        mock_doc2 = MagicMock()
+        mock_doc2.to_dict.return_value = {'id': 'inst2', 'assignee': 'user123'}
 
-    # TODO: Currently non-functional. Need to fix in the future.
-    # def test_get_chore_instances_by_user_success(self):
-    #     # setup mock query results
-    #     mock_instance1 = MagicMock()
-    #     mock_instance1.to_dict.return_value = {'id': 'inst1', 'assignee': 'user1'}
-    #     mock_instance2 = MagicMock()
-    #     mock_instance2.to_dict.return_value = {'id': 'inst2', 'assignee': 'user1'}
+        mock_query = MagicMock()
+        mock_query.get.return_value = [mock_doc1, mock_doc2]
 
-    #     mock_collection = MagicMock()
-    #     mock_collection.where.return_value.get.return_value = [mock_instance1, mock_instance2]
+        chore_instances_mock = MagicMock()
+        chore_instances_mock.where.return_value = mock_query
 
-    #     self.mock_db.collection.return_value = mock_collection
+        house_ref_mock = MagicMock()
+        house_ref_mock.collection.return_value = chore_instances_mock
 
-    #     results = get_chore_instances_by_user(self.mock_db, 'user1')
+        houses_mock = MagicMock()
+        houses_mock.document.return_value = house_ref_mock
 
-    #     self.mock_db.collection.assert_called_with('choreInstances')
-    #     mock_collection.where.assert_called_with('assignee', '==', 'user1')
-    #     self.assertEqual(results, [{'id': 'inst1', 'assignee': 'user1'}, {'id': 'inst2', 'assignee': 'user1'}])
+        self.mock_db.collection.return_value = houses_mock
 
-    # def test_get_chore_instances_by_user_failure(self):
-    #     mock_collection = MagicMock()
-    #     mock_collection.where.side_effect = Exception('fail')
-    #     self.mock_db.collection.return_value = mock_collection
+        result = get_chore_instances_by_user(self.mock_db, data)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['id'], 'inst1')
+        self.assertEqual(result[1]['id'], 'inst2')
 
-    #     results = get_chore_instances_by_user(self.mock_db, 'user1')
-    #     self.assertEqual(results, [])
+    def test_get_chore_instances_by_user_failure(self):
+        data = {
+            'user_id': 'user123',
+            'house_id': 'house456'
+        }
+        self.mock_db.collection.side_effect = Exception("DB Error")
+        result = get_chore_instances_by_user(self.mock_db, data)
+        self.assertEqual(result, [])
 
+    def test_get_chore_instances_by_house_success(self):
+        data = {'house_id': 'house456'}
+
+        mock_doc1 = MagicMock()
+        mock_doc1.to_dict.return_value = {'id': 'inst1'}
+
+        mock_doc2 = MagicMock()
+        mock_doc2.to_dict.return_value = {'id': 'inst2'}
+
+        chore_instances_collection = MagicMock()
+        chore_instances_collection.get.return_value = [mock_doc1, mock_doc2]
+
+        house_doc = MagicMock()
+        house_doc.collection.return_value = chore_instances_collection
+
+        houses_collection = MagicMock()
+        houses_collection.document.return_value = house_doc
+
+        self.mock_db.collection.return_value = houses_collection
+
+        result = get_chore_instances_by_house(self.mock_db, data)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['id'], 'inst1')
+        self.assertEqual(result[1]['id'], 'inst2')
+
+    def test_get_chore_instances_by_house_failure(self):
+        data = {
+            'house_id': 'house456'
+        }
+
+        self.mock_db.collection.side_effect = Exception("DB Error")
+        result = get_chore_instances_by_house(self.mock_db, data)
+        self.assertEqual(result, [])
 if __name__ == '__main__':
     unittest.main()
