@@ -54,26 +54,23 @@ Before you begin, ensure you have the following installed:
 
 ## Configuration
 
-**NOTE: Please skip this section for now. It is not necessary in the current release version.**
+**NOTE: This section was recently updated. If you had previously been instructed to skip it, please follow it now.**
 
 The application requires a Firebase Admin SDK service account credentials file.
 
 1.  **Obtain Firebase Admin SDK credentials:**
 
     - Go to the [Firebase Console](https://console.firebase.google.com/).
-    - Select your project.
+    - Select the Divvy project. If you do not see it, please contact one of the contributors.
     - Go to Project settings > Service accounts.
     - Click "Generate new private key".
     - Download the JSON file containing your credentials.
 
-2.  **Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable:**
+2.  **Add the private key:**
 
-    - This environment variable should point to the path of your downloaded credentials JSON file.
-
-    ```bash
-    export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/serviceAccountKey.json"
-    set GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your\serviceAccountKey.json"
-    ```
+    - Open or create a file called firebase-auth.json in ./src.
+    - Paste the contents of the JSON file you downloaded into firebase-auth.json.
+    - This is your personal private key. Make sure to never commit the contents of firebase-auth.json to the repository.
 
 ## Setting up the Frontend
 
