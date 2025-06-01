@@ -43,18 +43,15 @@ Before you begin, ensure you have the following installed:
 2.  **Install the required dependencies:**
 
     ```bash
-    pip install -r requirements.txt
+    pip install -r requirements.txt  
+    pip install --upgrade google-cloud-firestore  
     ```
 
     Note that if you're on a newer mac, you may need to run
 
     ```bash
-    pip3 install -r requirements.txt
-    ```
-
-    You may also need to run this command if your flask server does not run properly.
-    ```bash
-    pip install --upgrade google-cloud-firestore
+    pip3 install -r requirements.txt  
+    pip install --upgrade google-cloud-firestore  
     ```
 
 ## Configuration
