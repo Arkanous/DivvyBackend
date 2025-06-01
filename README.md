@@ -52,6 +52,11 @@ Before you begin, ensure you have the following installed:
     pip3 install -r requirements.txt
     ```
 
+    You may also need to run this command if your flask server does not run properly.
+    ```bash
+    pip install --upgrade google-cloud-firestore
+    ```
+
 ## Configuration
 
 **NOTE: This section was recently updated. If you had previously been instructed to skip it, please follow it now.**
