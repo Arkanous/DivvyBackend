@@ -315,7 +315,7 @@ from unittest.mock import MagicMock, patch
 ssh root@[server ip]
 ```
 
-3. Start the virtual envirment
+3. Start the virtual environment
 ```
 python3 -m venv venv
 source venv/bin/activate
