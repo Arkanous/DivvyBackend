@@ -308,5 +308,32 @@ from unittest.mock import MagicMock, patch
 ```
 
 ## How to Build a Release of the Software
-- There are no steps yet until we add Digital Ocean to host our services.
-- For release testing, make sure you test not only with curling and unit tests, but also opening the frontend and testing the connection locally.
+1. Ask the owners to be added to our Digital Ocean Server  
+
+2. ssh into the server through your terminal
+```
+ssh root@[server ip]
+```
+
+3. Start the virtual envirment
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+
+4. Go to the Divvy repo
+```
+cd DivvyBackend/
+pip install -r requirements.txt
+pip install --upgrade google-cloud-firestore  
+```
+
+5. Start the server (optional)
+```
+cd src/
+gunicorn --bind 0.0.0.0:5000 app:app
+```
+You can now call the server at
+```
+http://[server ip]:5000
+```
