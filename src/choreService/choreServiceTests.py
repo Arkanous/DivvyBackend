@@ -3,7 +3,7 @@ import sys
 sys.path.append('../')
 import unittest
 from unittest.mock import MagicMock, patch
-from datetime import datetime
+from datetime import datetime, timezone
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 import sys
@@ -20,7 +20,8 @@ from choreService.chore_utils import (
     upsert_chore,
     upsert_chore_instance,
     get_chore_instances_by_user,
-    get_chore_instances_by_house
+    get_chore_instances_by_house,
+    get_current_day_chore_instances_by_user
 )
 from flask import Flask
 
@@ -162,5 +163,68 @@ class TestChoreService(unittest.TestCase):
         self.mock_db.collection.side_effect = Exception("DB Error")
         result = get_chore_instances_by_house(self.mock_db, data)
         self.assertEqual(result, [])
+
+    @patch('choreService.chore_utils.datetime')
+    def test_get_current_day_chore_instances_by_user_success(self, mock_datetime):
+        fixed_now = datetime(2025, 5, 31, 10, 30, 0, tzinfo=timezone.utc)
+        mock_datetime.now.return_value = fixed_now
+        mock_datetime.datetime = MagicMock(side_effect=lambda *args, **kwargs: datetime(*args, **kwargs))
+        mock_datetime.datetime.now.return_value = fixed_now
+        mock_datetime.timezone = timezone
+
+        data = {
+            'user_id': 'user_today',
+            'house_id': 'house_daily'
+        }
+
+        due_today_str = datetime(2025, 5, 31, 15, 0, 0, tzinfo=timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        mock_doc_today = MagicMock()
+        mock_doc_today.to_dict.return_value = {'id': 'inst_today', 'assignee': 'user_today', 'dueDate': due_today_str}
+
+        due_yesterday_str = datetime(2025, 5, 30, 10, 0, 0, tzinfo=timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        mock_doc_yesterday = MagicMock()
+        mock_doc_yesterday.to_dict.return_value = {'id': 'inst_yesterday', 'assignee': 'user_today', 'dueDate': due_yesterday_str}
+
+        due_tomorrow_str = datetime(2025, 6, 1, 9, 0, 0, tzinfo=timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        mock_doc_tomorrow = MagicMock()
+        mock_doc_tomorrow.to_dict.return_value = {'id': 'inst_tomorrow', 'assignee': 'user_today', 'dueDate': due_tomorrow_str}
+
+        mock_query_where_assignee = MagicMock()
+        mock_query_where_start_date = MagicMock()
+        mock_query_final = MagicMock()
+
+        self.mock_chore_instances_collection.where.return_value = mock_query_where_assignee
+        mock_query_where_assignee.where.return_value = mock_query_where_start_date
+        mock_query_where_start_date.where.return_value = mock_query_final
+
+        mock_query_final.get.return_value = [mock_doc_today]
+
+        result = get_current_day_chore_instances_by_user(self.mock_db, data)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['id'], 'inst_today')
+        self.assertEqual(result[0]['assignee'], 'user_today')
+        self.assertEqual(result[0]['dueDate'], due_today_str)
+
+
+    @patch('choreService.chore_utils.datetime')
+    def test_get_current_day_chore_instances_by_user_failure(self, mock_datetime):
+        fixed_now = datetime(2025, 5, 31, 10, 30, 0, tzinfo=timezone.utc)
+        mock_datetime.now.return_value = fixed_now
+        mock_datetime.datetime = MagicMock(side_effect=lambda *args, **kwargs: datetime(*args, **kwargs))
+        mock_datetime.datetime.now.return_value = fixed_now
+        mock_datetime.timezone = timezone
+
+        data = {
+            'user_id': 'user_fail',
+            'house_id': 'house_fail'
+        }
+
+        self.mock_db.collection.side_effect = Exception("Firestore Connection Error")
+
+        result = get_current_day_chore_instances_by_user(self.mock_db, data)
+
+        self.assertEqual(result, [])
+        
 if __name__ == '__main__':
     unittest.main()

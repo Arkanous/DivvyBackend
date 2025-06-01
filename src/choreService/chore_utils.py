@@ -1,5 +1,5 @@
 from firebase_admin import firestore
-from datetime import datetime
+import datetime
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY
 from flask import jsonify
 
@@ -34,11 +34,6 @@ def upsert_chore_instance(db, data, house_id):
         print(f"Error creating/updating chore instance: {e}")
         return jsonify({'error': 'Could not upsert chore instance'}), 500
 
-
-# /// Un-Implemented Functions /// #
-    # These functions have been written, but aren't used
-    # and haven't been tested.
-
 def get_chore_instances_by_user(db, data):
     """
     Retrieves chore instances for a specific user within a date range.
@@ -58,6 +53,47 @@ def get_chore_instances_by_user(db, data):
 
         query = chore_instances_ref.where(
             filter=firestore.FieldFilter('assignee', '==', data.get('user_id'))
+        )
+        results = query.get()
+        for instance in results:
+            instances.append(instance.to_dict())
+        return instances
+    except Exception as e:
+        print(f"Error getting chore instances for user {data.get('user_id')} in house {data.get('house_id')}: {e}")
+        return []
+    
+def get_current_day_chore_instances_by_user(db, data):
+    """
+    Retrieves chore instances for a specific user within a date range.
+
+    Args:
+        db (firestore.Client): The Firestore client.
+        data: json of user_id and house_id
+
+    Returns:
+        list: A list of chore instance dictionaries, or an empty list on error.
+    """
+    try:
+        instances = []
+        houses_ref = db.collection('houses')
+        house_ref = houses_ref.document(data.get('house_id'))
+        chore_instances_ref = house_ref.collection('choreInstances')
+
+        today_utc = datetime.datetime.now(datetime.timezone.utc).date()
+
+        # calculate the start and end of the current day in UTC
+        start_of_day_utc = datetime.datetime.combine(today_utc, datetime.time.min, tzinfo=datetime.timezone.utc)
+        end_of_day_utc = datetime.datetime.combine(today_utc, datetime.time.max, tzinfo=datetime.timezone.utc)
+
+        start_of_day_str = start_of_day_utc.strftime("%a, %d %b %Y %H:%M:%S GMT")
+        end_of_day_str = end_of_day_utc.strftime("%a, %d %b %Y %H:%M:%S GMT")
+
+        query = chore_instances_ref.where(
+            filter=firestore.FieldFilter('assignee', '==', data.get('user_id'))
+        ).where(
+            filter=firestore.FieldFilter('dueDate', '>=', start_of_day_str)
+        ).where(
+            filter=firestore.FieldFilter('dueDate', '<=', end_of_day_str)
         )
         results = query.get()
         for instance in results:
@@ -89,6 +125,10 @@ def get_chore_instances_by_house(db, data):
     except Exception as e:
         print(f"Error getting chore instances for house {data.get('house_id')}: {e}")
         return []
+    
+# /// Un-Implemented Functions /// #
+    # These functions have been written, but aren't used
+    # and haven't been tested.
 
 # def get_chore_instance(db, instance_id):
 #     """
