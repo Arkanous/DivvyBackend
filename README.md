@@ -63,9 +63,9 @@ The application requires a Firebase Admin SDK service account credentials file.
 1.  **Obtain Firebase Admin SDK credentials:**
 
     - Go to the [Firebase Console](https://console.firebase.google.com/).
-    - Select the Divvy project. If you do not see it, please contact one of the contributors.
+    - Select the Divvy project. If you do not see it, please email acsparks@uw.edu.
     - Go to Project settings > Service accounts.
-    - Click "Generate new private key".
+    - Under "Firebase Admin SDK", click "Generate new private key". If you're told that the max number of keys has been reached, please email acsparks@uw.edu.
     - Download the JSON file containing your credentials.
 
 2.  **Add the private key:**
