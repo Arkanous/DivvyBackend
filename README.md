@@ -70,7 +70,7 @@ The application requires a Firebase Admin SDK service account credentials file.
 
 2.  **Add the private key:**
 
-    - Open or create a file called firebase-auth.json in ./src.
+    - Create a file called firebase-auth.json in ./src.
     - Paste the contents of the JSON file you downloaded into firebase-auth.json.
     - This is your personal private key. Make sure to never commit the contents of firebase-auth.json to the repository.
 
