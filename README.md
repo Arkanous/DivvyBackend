@@ -17,9 +17,6 @@ This is the backend service for Divvy, a chore division application. It's built 
 - [Testing](#testing)
 - [Debugging](#debugging)
 - [API Endpoints](#api-endpoints)
-  - [User Service Endpoints](#user-service-endpoints)
-  - [House Service Endpoints](#house-service-endpoints)
-  - [Chore Service Endpoints](#chore-service-endpoints)
 - [Adding New Tests](#adding-new-tests)
 - [How to Build a Release of the Software](#how-to-build-a-release-of-the-software)
 
@@ -231,7 +228,7 @@ POST /upsert-chore-instance-<house_id>
 POST /upsert-chore-<house_id>
 - Creates a new chore under a house in the database's house collection. If the chore already exists, then non-empty fields will be updated instead. The houseID field must be a valid house ID. The id field must be non-empty.
 - Example:
-  curl -X POST -H "Content-Type: application/json" -d '{'id': '12lcxzv', 'assignees': ['asdnzxvcie'], 'description': 'A useful desc.', 'emoji': '<emojiHere>', 'frequencyDays': ['3','7'], 'frequencyPattern': 'weekly', 'name': 'choreName', 'startDate': 'Thu, 01 May 2025 07:00:00 GMT'}' http://127.0.0.1:5000/upsert-chore-121cxzv
+  curl -X POST -H "Content-Type: application/json" -d '{'id': '12lcxzv', 'assignees': ['asdnzxvcie'], 'description': 'A useful desc.', 'emoji': '<emojiHere>', 'frequencyDays': ['3','7'], 'frequencyPattern': 'weekly', 'name': 'choreName', 'startDate': 'Thu, 01 May 2025 07:00:00 GMT'}' http://127.0.0.1:5000/upsert-chore-<house_id>
 - Request body example:
             {
                 'id': '12lcxzv',
@@ -462,3 +459,6 @@ You can now call the server at
 ```
 http://[server ip]:5000
 ```
+
+## Questions?
+If you have questions, concerns, comments, or other queries, please feel free to contact acsparks@uw.edu
