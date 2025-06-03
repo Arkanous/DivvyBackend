@@ -194,6 +194,40 @@ Here's how to debug the application using Visual Studio Code:
 
 The frontend sends and receives data from the server via requests to the server's address. Different address URIs are routed to call different functions in the backend server based on these endpoints.
 
+POST /upsert-member-<house_id>
+- Adds an existing user as a member to a house in the database's house collection. If the member already exists, then non-empty fields will be updated instead. The houseID field must be a valid house ID. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'houseID': 'aslkdf', 'id': 'zoiwern', 'chores': ['asdnzxpow8cx'], 'dateJoined': 'Thu, 01 May 2025 07:00:00 GMT', 'email': 'example@divvy.com', 'name': 'a Name', 'onTimePct': '82', 'profilePicture': 'lightGreen', 'subgroups': ['zxc0923n']}' http://127.0.0.1:5000/upsert-member-<house_id>
+- Request body example:
+            {
+                'id': <member_id>,
+                'chores': [
+                    'asdnzxpow8cx'],
+                'email': 'example@divvy.com',
+                'name': 'a Name',
+                'onTimePct': '82',
+                'profilePicture': 'lightGreen',
+                'subgroups': [
+                    'zxc0923n']
+            }
+- Response: {'id': <member_id>}
+
+POST /upsert-chore-instance-<house_id>
+- Creates a new chore instance under a house in the database's house collection. If the chore instance already exists, then non-empty fields will be updated instead. The houseID field must be a valid house ID. The choreID field must a valid (super) chore ID of that house. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'assignee': <user_id>, 'choreID': "e79c266c-f1fc-4dd6-bc66-92595ae11f68", 'doneOnTime': false, 'dueDate': "Fri, 04 Jul 2025 18:59:59 GMT", 'id': "04a03063-95a5-46cc-a631-0f074a8ba441", 'isDone': false, 'swapID:' "" }' http://127.0.0.1:5000/upsert-chore-instance-<house_id>
+- Request body example:
+            {
+              'assignee': <user_id>,
+              'choreID': <chore_instance_id>,
+              'doneOnTime': false,
+              'dueDate': "Fri, 04 Jul 2025 18:59:59 GMT",
+              'id': "04a03063-95a5-46cc-a631-0f074a8ba441",
+              'isDone': false,
+              'swapID:' ""
+            }
+  - Response: {'id': <chore_instance_id>}
+
 POST /upsert-chore-<house_id>
 - Creates a new chore under a house in the database's house collection. If the chore already exists, then non-empty fields will be updated instead. The houseID field must be a valid house ID. The id field must be non-empty.
 - Example:
@@ -286,121 +320,107 @@ POST /delete-user-<user_id>
 - Response: {"id": <user_id>}
 
 POST /delete-chore-<house_id>
-- Deletes a chore from a house in the database's house collection. The id field must be non-empty.
+- Deletes a chore in the database's house collection. The id field must be non-empty.
 - Example:
   curl -X POST -H "Content-Type: application/json" -d '{'id': <chore_id>}' http://127.0.0.1:5000/delete-chore-<house_id>
 - Request body example: {'id': <chore_id>}
 - Response: {'id': <chore_id>}
 
 POST /delete-chore-instance-<house_id>
-
-  
-  
-
-POST /upsert-user
-- Creates or updates a user.
+- Deletes a chore instance in the database's house collection. The id field must be non-empty.
 - Example:
-  curl -X POST -H "Content-Type: application/json" -d '{"email":"test@example.com","id":"user123","houseID":"house456"}' http://127.0.0.1:5000/upsert-user
-- Request Body:
-  {
-    "email": "test@example.com",
-    "id": "user123",
-    "houseID": "house456"
-  }
-- Response:
-  {
-    "message": "User upserted successfully"
-  }
+  curl -X POST -H "Content-Type: application/json" -d '{'id': <chore_instance_id>}' http://127.0.0.1:5000/delete-chore-instance-<house_id>
+- Request body example: {'id': <chore_instance_id>}
+- Response: {'id': <chore_instance_id>}
+
+POST /delete-subgroup-<house_id>
+- Deletes a subgroup in the database's house collection. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'id': <subgroup_id>}' http://127.0.0.1:5000/delete-subgroup-<house_id>
+- Request body example: {'id': <subgroup_id>}
+- Response: {'id': <subgroup_id>}
+
+POST /delete-swap-<house_id>
+- Deletes a swap in the database's house collection. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'id': <swap_id>}' http://127.0.0.1:5000/delete-swap-<house_id>
+- Request body example: {'id': <swap_id>}
+- Response: {'id': <swap_id>}
+
+POST /delete-member-<house_id>
+- Deletes a member in the database's house collection. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'id': <member_id>}' http://127.0.0.1:5000/delete-member-<house_id>
+- Request body example: {'id': <member_id>}
+- Response: {'id': <member_id>}
 
 POST /add-house
-- Creates a new house.
+- Creates a new house in the database's houses collection.
 - Example:
-  curl -X POST -H "Content-Type: application/json" -d '{"name":"My New House","id":"house456"}' http://127.0.0.1:5000/add-house
-- Request Body:
-  {
-    "name": "My New House",
-    "id": "house456"
-  }
-- Response:
-  {
-    "message": "House created successfully"
-  }
+  curl -X POST -H "Content-Type: application/json" -d '{'house_id': '1', 'house_name': 'New House', 'creator_user_id': 'u123'}' http://127.0.0.1:5000/add-house
+- Request Body: {'house_id': '1', 'house_name': 'New House', 'creator_user_id': 'u123'}
+- Response: {'id': <house_id>}
 
-POST /add-chore
-- Creates a new chore.
+POST /delete-house-<house_id>
+- Deletes a house in the database's House collection. Deletes all subcollections within. The id field must be non-empty.
 - Example:
-  curl -X POST -H "Content-Type: application/json" -d '{"name":"Take out trash","id":"chore789","houseID":"house456","description":"Take the trash out to the curb","points":10}' http://127.0.0.1:5000/add-chore
-- Request Body:
-  {
-    "name": "Take out trash",
-    "id": "chore789",
-    "houseID": "house456",
-    "description": "Take the trash out to the curb",
-    "points": 10
-  }
-- Response:
-  {
-    "message": "Chore created successfully"
-  }
+  curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:5000/delete-house-<house_id>
+- Request Body: {}
+- Response: {'id': <house_id>}
 
-POST /add-chore-instance
-- Creates a new chore instance.
+GET /get-house-<house_id>
+- Retrieves a house document from the database's houses collection. If the ID does not exist in the database, returns None.
 - Example:
-  curl -X POST -H "Content-Type: application/json" -d '{"choreID":"chore789","assignedTo":"user123","dueDate":"2025-06-01T12:00:00Z","status":"pending","id":"instance123"}' http://127.0.0.1:5000/add-chore-instance
-- Request Body:
-  {
-    "choreID": "chore789",
-    "assignedTo": "user123",
-    "dueDate": "2025-06-01T12:00:00Z",
-    "status": "pending",
-    "id": "instance123"
-  }
-- Response:
-  {
-    "message": "Chore instance created successfully"
-  }
+  curl http://127.0.0.1:5000/get-house-<house_id>
+- Response: The house as a json object. This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
 
-GET /house/<house_id>/chores
-- Gets all chores in a house.
+GET /get-house-join-<join_code>
+- Retrieves a house document from the database's houses collection with the matching join code.
 - Example:
-  curl http://127.0.0.1:5000/house/house456/chores
-- Response:
-  [
-    {
-      "id": "chore789",
-      "name": "Take out trash",
-      "description": "Take the trash out to the curb",
-      "points": 10
-    }
-  ]
+  curl http://127.0.0.1:5000/get-house-join-<join_code>
+- Response: The matching house as a json object. This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
 
-GET /house/<house_id>/chore-instances
-- Gets all chore instances in a house.
+GET /get-user-<user_id>
+- Retrieves a user's document from the database's users collection. If the user ID does not exist in the database, returns None.
 - Example:
-  curl http://127.0.0.1:5000/house/house456/chore-instances
-- Response:
-  [
-    {
-      "id": "instance123",
-      "choreID": "chore789",
-      "assignedTo": "user123",
-      "dueDate": "2025-06-01T12:00:00Z",
-      "status": "pending"
-    }
-  ]
+  curl http://127.0.0.1:5000/get-user-<user_id>
+- Response: {'email': 'example@gmail.com', 'houseID': 'alskdjfl', 'id': <user_id>, 'name': 'John'}
 
-PUT /chore/instances/<instance_id>
-- Updates a chore instance (e.g., to mark it as completed).
+GET /get-house-<house_id>-chores
+- Retrieves a house's chores collection. Returns None if house_id is not in the database.
 - Example:
-  curl -X PUT -H "Content-Type: application/json" -d '{"status":"completed"}' http://0.0.0.0:5000/chore/instances/instance123
-- Request Body:
-  {
-    "status": "completed"
-  }
-- Response:
-  {
-    "message": "Chore instance updated successfully"
-  }
+  curl http://127.0.0.1:5000/get-house-<house_id>-chores
+- Response: The list of all chores and their data for the house. This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
+
+GET /get-house-<house_id>-swaps
+- Retrieves a house's swaps collection. Returns None if house_id is not in the database.
+- Example:
+  curl http://127.0.0.1:5000/get-house-<house_id>-swaps
+- Response: The list of all swaps and their data for the house. This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
+
+GET /get-house-<house_id>-chore-instances
+- Retrieves a house's chore instances collection. Returns None if house_id is not in the database.
+- Example:
+  curl http://127.0.0.1:5000/get-house-<house_id>-chore-instances
+- Response: The list of all chore instances and their data for the house. This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
+
+GET /get-house-<house_id>-members
+- Retrieves a house's members collection. Returns None if house_id is not in the database.
+- Example:
+  curl http://127.0.0.1:5000/get-house-<house_id>-members
+- Response: The list of all members and their data for the house. This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
+
+GET /get-house-<house_id>-subgroups
+- Retrieves a house's subgroups collection. Returns None if house_id is not in the database.
+- Example:
+  curl http://127.0.0.1:5000/get-house-<house_id>-subgroups
+- Response: The list of all subgroups and their data for the house. This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
+
+GET /get-house-<house_id>-subgroup-<subgroup_id>
+- Retrieves a subgroup from a house. Returns None if house_id or subgroup_id is not in the database. 
+- Example:
+  curl http://127.0.0.1:5000/get-house-<house_id>-subgroup-<subgroup_id>
+- Response: {"chores": ["e79c266c-f1fc-4dd6-bc66-92595ae11f68"], "id": <subgroup_id>, "members": ["Iqha69gogtMJQuoWitSVgQFqI6V2"], "name": "Upstairs", "profilePicture": "Blue"}
 
 ## Adding New Tests
 - Create a test file inside the related folder you are unit testing.
