@@ -80,7 +80,7 @@ The application requires a Firebase Admin SDK service account credentials file.
 
 1.  **Please see the frontend repository for instructions on setting up the frontend:** https://github.com/sonyaouthred/Divvy
 2.  Tests for the backend will work just fine without the frontend, and you can still use curl to access endpoints, but if you would like to run the full app, you will obviously need the frontend.
-3.  Note that with the current release, the Flask server and the frontend need to be running on the same machine. This will change. See the next step for how to start the server.
+3.  Note that with the current public release of the frontend repository, the Flask server and the frontend need to be running on the same machine for development. The actual iOS release connects to our Digital Ocean server (see [How to Build a Release of the Software](#how-to-build-a-release-of-the-software)). See [Running the System](#running-the-system) for how to start the Flask server.
 
 ## File layout
 DivvyBackend/  
@@ -192,7 +192,110 @@ Here's how to debug the application using Visual Studio Code:
 
 ## API Endpoints
 
-**NOTE: Not all endpoints are fully implemented yet. Please consult app.py to see documentation for the routes that are currently implemented. Below is a list of those endpoints:**
+The frontend sends and receives data from the server via requests to the server's address. Different address URIs are routed to call different functions in the backend server based on these endpoints.
+
+POST /upsert-chore-<house_id>
+- Creates a new chore under a house in the database's house collection. If the chore already exists, then non-empty fields will be updated instead. The houseID field must be a valid house ID. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'id': '12lcxzv', 'assignees': ['asdnzxvcie'], 'description': 'A useful desc.', 'emoji': '<emojiHere>', 'frequencyDays': ['3','7'], 'frequencyPattern': 'weekly', 'name': 'choreName', 'startDate': 'Thu, 01 May 2025 07:00:00 GMT'}' http://127.0.0.1:5000/upsert-chore-121cxzv
+- Request body example:
+            {
+                'id': '12lcxzv',
+                'assignees': [
+                    'asdnzxvcie'],
+                'description': 'A useful desc.',
+                'emoji': '<emojiHere>',
+                'frequencyDays': ['3','7'],
+                'frequencyPattern': 'weekly',
+                'name': 'choreName',
+                'startDate': 'Thu, 01 May 2025 07:00:00 GMT'
+            }
+- Response: {'id': '12lcxzv'}
+
+POST /get-user-chores
+- Get a list of a user's chore instances from their house in the database's house collection.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"user_id": <user_id>, "house_id": <house_id>}' http://127.0.0.1:5000/get-user-chores
+- Request body example: { "user_id": <user_id>, "house_id":  <house_id> }
+- Response: [{'assignee': <user_id>, 'choreID': "e79c266c-f1fc-4dd6-bc66-92595ae11f68", 'doneOnTime': false, 'dueDate': "Fri, 04 Jul 2025 18:59:59 GMT", 'id': "04a03063-95a5-46cc-a631-0f074a8ba441", 'isDone': false, 'swapID:' "" }]
+
+POST /get-current-day-user-chores
+- Get a list of a user's chore instances from their house in the database's house collection for today.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"user_id": <user_id>, "house_id": <house_id>}' http://127.0.0.1:5000/get-current-day-user-chores
+- Request body example: { "user_id": <user_id>, "house_id":  <house_id> }
+- Response: [{'assignee': <user_id>, 'choreID': "e79c266c-f1fc-4dd6-bc66-92595ae11f68", 'doneOnTime': false, 'dueDate': "Fri, 04 Jul 2025 18:59:59 GMT", 'id': "04a03063-95a5-46cc-a631-0f074a8ba441", 'isDone': false, 'swapID:' "" }]
+
+POST /get-house-chores
+- Get a list of the chores in a house.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"house_id": <house_id>}' http://127.0.0.1:5000/get-house-chores
+- Request body example: {"house_id": <house_id>}
+- Response: [{
+    "assignee": "wFbjmkmVVrXAWQPVHAv2sjCaMNu1",
+    "choreID": "2be7dde8-06fe-4ad7-881e-d7b4ffc605e9",
+    "doneOnTime": false,
+    "dueDate": "Sat, 06 Sep 2025 18:59:59 GMT",
+    "id": "fd2364e1-a4b7-4f97-924a-0e39cfaed6ef",
+    "isDone": false,
+    "swapID": ""
+  },
+  {
+    "assignee": "wFbjmkmVVrXAWQPVHAv2sjCaMNu1",
+    "choreID": "c16381d7-06e5-4989-b5b8-b6a078692580",
+    "doneOnTime": false,
+    "dueDate": "Thu, 18 Sep 2025 18:59:59 GMT",
+    "id": "fea67adb-91b8-48ae-b763-cc6251b0152c",
+    "isDone": false,
+    "swapID": ""
+  }]
+
+POST /upsert-subgroup-<house_id>
+- Creates a new subgroup under a house in the database's house collection. If the subgroup already exists, then non-empty fields will be updated instead.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"chores": ["e79c266c-f1fc-4dd6-bc66-92595ae11f68"], "id": <subgroup_id>, "members": ["Iqha69gogtMJQuoWitSVgQFqI6V2"], "name": "Upstairs", "profilePicture": "Blue"}' http://127.0.0.1:5000/upsert-subgroup-<house_id>
+- Request body example: {"id": <subgroup_id>}
+- Response: {"id": <subgroup_id>}
+
+POST /upsert-swap-<house_id>
+- Creates a new swap under a house in the database's house collection. If the swap already exists, then non-empty fields will be updated instead.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{"id": <swap_id>}' http://127.0.0.1:5000/upsert-swap-<house_id>
+- Request body example: {"id": <swap_id>}
+- Response: {"id": <swap_id>}
+
+POST /upsert-house
+- Updates house data. If the house already exists, then non-empty fields will be updated instead.
+- Example:
+  This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
+- Request body example: Same problem.
+- Response: {"id": <house_id>}
+
+POST /upsert-user
+- Creates a new user in the database's user collection. If the user already exists, then non-empty fields will be updated instead.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'email': 'example@gmail.com', 'houseID': 'alskdjfl', 'id': 'NisesS', 'name': 'John'}' http://127.0.0.1:5000/upsert-user
+- Request body example: {'email': 'example@gmail.com', 'houseID': 'alskdjfl', 'id': 'NisesS', 'name': 'John'}
+- Response: {"id": <user_id>}
+
+POST /delete-user-<user_id>
+- Deletes a user in the database's user collection. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:5000/delete-user-<user_id>
+- Request body example: {}
+- Response: {"id": <user_id>}
+
+POST /delete-chore-<house_id>
+- Deletes a chore from a house in the database's house collection. The id field must be non-empty.
+- Example:
+  curl -X POST -H "Content-Type: application/json" -d '{'id': <chore_id>}' http://127.0.0.1:5000/delete-chore-<house_id>
+- Request body example: {'id': <chore_id>}
+- Response: {'id': <chore_id>}
+
+POST /delete-chore-instance-<house_id>
+
+  
+  
 
 POST /upsert-user
 - Creates or updates a user.
