@@ -20,6 +20,8 @@ This is the backend service for Divvy, a chore division application. It's built 
   - [User Service Endpoints](#user-service-endpoints)
   - [House Service Endpoints](#house-service-endpoints)
   - [Chore Service Endpoints](#chore-service-endpoints)
+- [Adding New Tests](#adding-new-tests)
+- [How to Build a Release of the Software](#how-to-build-a-release-of-the-software)
 
 ## Prerequisites
 
@@ -297,7 +299,7 @@ PUT /chore/instances/<instance_id>
     "message": "Chore instance updated successfully"
   }
 
-## How to Add New Tests
+## Adding New Tests
 - Create a test file inside the related folder you are unit testing.
 - Go to .github\workflows\python-app.yml and add the command to run your test file to the run section at the bottom (i.e. python -m pytest ./choreService/choreServiceTests.py).
 - For examples of existing tests, look at (inside ./src) ./houseService/houseServiceTests.py, ./choreService/choreServiceTests.py, and ./userService/userServiceTests.py.
