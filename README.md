@@ -191,7 +191,7 @@ Here's how to debug the application using Visual Studio Code:
 
 The frontend sends and receives data from the server via requests to the server's address. Different address URIs are routed to call different functions in the backend server based on these endpoints.
 
-Endpoints outlined here give an example curl command to use, an example body, and an example response. Items in "<>" (e.g., <house_id>) are meant to be replaced with other data, usually an ID of some kind. Some responses (and one request body) are too long to be reasonably fit into this README. Please see the frontend repository and the Firestore database for examples of expected output. Alternatively, use the provided curl command for that endpoint with a known house_id and observe the output.
+Endpoints outlined here give an example curl command to use, an example body, and an example response. Items in "<>" (e.g., <house_id>) are meant to be replaced with other data, usually an ID of some kind. Some example responses are too long to be reasonably fit into this README. Please see the frontend repository and the Firestore database for examples of expected output. Alternatively, use the provided curl command for that endpoint with a known house_id and observe the output.
 
 POST /upsert-member-<house_id>
 - Adds an existing user as a member to a house in the database's house collection. If the member already exists, then non-empty fields will be updated instead. The houseID field must be a valid house ID. The id field must be non-empty.
@@ -298,10 +298,10 @@ POST /upsert-swap-<house_id>
 - Response: {"id": <swap_id>}
 
 POST /upsert-house
-- Updates house data. If the house already exists, then non-empty fields will be updated instead.
+- Updates house data. If the house already exists, then fields will be updated instead.
 - Example:
-  This one is a bit too long to document here and would only serve to clutter the README. Please refer to the frontend repository and the Firestore for examples.
-- Request body example: Same problem.
+  curl -X POST -H "Content-Type: application/json" -d '{'name': 'houseName', 'id': <house_id>, 'imageID': '', 'joinCode': 'ZsmLvSVz53', 'dateCreated': 'Tue, 20 May 2025 22:43:40 GMT'}' http://127.0.0.1:5000/upsert-house
+- Request body example: {'name': 'houseName', 'id': <house_id>, 'imageID': '', 'joinCode': 'ZsmLvSVz53', 'dateCreated': 'Tue, 20 May 2025 22:43:40 GMT'}
 - Response: {"id": <house_id>}
 
 POST /upsert-user
