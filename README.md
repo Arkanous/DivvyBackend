@@ -191,6 +191,8 @@ Here's how to debug the application using Visual Studio Code:
 
 The frontend sends and receives data from the server via requests to the server's address. Different address URIs are routed to call different functions in the backend server based on these endpoints.
 
+Endpoints outlined here give an example curl command to use, an example body, and an example response. Items in "<>" (e.g., <house_id>) are meant to be replaced with other data, usually an ID of some kind. Some responses (and one request body) are too long to be reasonably fit into this README. Please see the frontend repository and the Firestore database for examples of expected output. Alternatively, use the provided curl command for that endpoint with a known house_id and observe the output.
+
 POST /upsert-member-<house_id>
 - Adds an existing user as a member to a house in the database's house collection. If the member already exists, then non-empty fields will be updated instead. The houseID field must be a valid house ID. The id field must be non-empty.
 - Example:
@@ -291,8 +293,8 @@ POST /upsert-subgroup-<house_id>
 POST /upsert-swap-<house_id>
 - Creates a new swap under a house in the database's house collection. If the swap already exists, then non-empty fields will be updated instead.
 - Example:
-  curl -X POST -H "Content-Type: application/json" -d '{"id": <swap_id>}' http://127.0.0.1:5000/upsert-swap-<house_id>
-- Request body example: {"id": <swap_id>}
+  curl -X POST -H "Content-Type: application/json" -d '{"id": <swap_id>, "choreID": <choreID_to_swap>, "choreInstID": <choreInstID_to_swap_with>, 'from': <request_from_member_id>, 'to': <request_to_member_id>, 'status': <swap_status>, 'offered': <choreInstID_offered_to_swap_with>}' http://127.0.0.1:5000/upsert-swap-<house_id>
+- Request body example: {"id": <swap_id>, "choreID": <choreID_to_swap>, "choreInstID": <choreInstID_to_swap_with>, 'from': <request_from_member_id>, 'to': <request_to_member_id>, 'status': <swap_status>, 'offered': <choreInstID_offered_to_swap_with>}
 - Response: {"id": <swap_id>}
 
 POST /upsert-house
