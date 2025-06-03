@@ -125,7 +125,47 @@ def get_chore_instances_by_house(db, data):
     except Exception as e:
         print(f"Error getting chore instances for house {data.get('house_id')}: {e}")
         return []
-    
+
+def get_notifications_by_user(db, house_id, user_id):
+    """
+    Retrieves notifications for specific user
+
+    Args:
+        db (firestore.Client): The Firestore client.
+        data: json of user_id and house_id
+
+    Returns:
+        list: A list of choreId and assignees dictionaries, or an empty list on error.
+    """
+    try:
+        instances = []
+        NOTIFICATION_INSTANCE = db.collection('houses').document(house_id).collection('notifications')
+        query = NOTIFICATION_INSTANCE.where(
+            filter=firestore.FieldFilter('assignee', '==', user_id)
+        )
+
+        results = query.get()
+        for doc in results:
+            instances.append(doc.to_dict())
+        return instances
+    except Exception as e:
+        print(f"Error getting notification instances for house {house_id} and {user_id}: {e}")
+        return []
+
+def clear_notifications(house_id, user_id, timestamp):
+    """
+    Clears specific users notifications 
+    """
+    # today_utc = datetime.datetime.now(datetime.timezone.utc).date()
+
+    # # calculate the start and end of the current day in UTC
+    # start_of_day_utc = datetime.datetime.combine(today_utc, datetime.time.min, tzinfo=datetime.timezone.utc)
+    # end_of_day_utc = datetime.datetime.combine(today_utc, datetime.time.max, tzinfo=datetime.timezone.utc)
+
+    # start_of_day_str = start_of_day_utc.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    # end_of_day_str = end_of_day_utc.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    return 'hello'
+ 
 # /// Un-Implemented Functions /// #
     # These functions have been written, but aren't used
     # and haven't been tested.

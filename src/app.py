@@ -11,7 +11,7 @@ from google.cloud.firestore_v1 import FieldFilter
 
 from houseService.house_utils import create_house, delete_collection, get_house
 from userService.user_utils import upsert_user
-from choreService.chore_utils import get_chore_instances_by_user, upsert_chore, upsert_chore_instance, get_chore_instances_by_house, get_current_day_chore_instances_by_user
+from choreService.chore_utils import get_chore_instances_by_user, upsert_chore, upsert_chore_instance, get_chore_instances_by_house, get_current_day_chore_instances_by_user,  get_notifications_by_user
 
 
 # Load .env file variables
@@ -477,7 +477,29 @@ def get_house_subgroup_route(house_id, subgroup_id):
         return jsonify({'error': 'Subgroup not found'}), 400
     except Exception as e:
         return jsonify({'error': 'Subgroup not found'}), 400
+
+@app.route('/get-notifications-house-<house_id>-user-<user_id>', methods=['GET'])
+def get_notifications_route(house_id, user_id):
+    """
+        Retrieves a user notification list  
+    """
     
+    house_ref = HOUSES.document(house_id)
+    house = house_ref.get()
+    if not house.exists:
+        return jsonify({'error': 'House does not exist'}), 400
+    memeber_ref = house_re.collection('membesrs').document(user_id)
+    memeber = member_ref.get()
+    if not member.exists:
+        return jsonify({'error': 'Member does not exist'}), 400
+    return get_notifications_by_user(db, data)
+
+@app.route('/clear-notifications-house-<house_id>-user-<user_id>-timestamp-<timestamp>', methods=['GET'])
+def clear_notifications_route(house_id, user_id, timestamp):
+    """
+        Retrieves a user notification list  
+    """
+    return 'hello'  
 # /// END Public Routes /// #
 
 # Run the app
