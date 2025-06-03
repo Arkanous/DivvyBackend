@@ -160,4 +160,4 @@ cython_debug/
 #.idea/
 
 # firebase-auth.json (Firebase private key)
-./src/firebase-auth.json
+firebase-auth.json
