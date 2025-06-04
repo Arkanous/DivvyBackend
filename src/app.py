@@ -34,7 +34,7 @@ cred = credentials.Certificate("firebase-auth.json")
 initialize_app(cred)
 db = firestore.client()
 
-# Primary db collection. The other collection is the "holding area" for new users.
+# houses is the primary db collection. users is the "holding area" for new users.
 HOUSES = db.collection('houses')
 USERS = db.collection('users')
 
@@ -48,16 +48,15 @@ def home():
 def upsert_member_route(house_id):
     """
         Adds an existing user as a member to a house in the database's
-        house collection. If the member already exists, then non-empty
-        fields will be updated instead.
+        house collection. If the member already exists, then data will
+        be overwritten.
         The houseID field must be a valid house ID.
         The id field must be non-empty.
         Request body example:
-            {'houseID': 'aslkdf',
+            {
                 'id': 'zoiwern',
                 'chores': [
-                    'asdnzxpow8cx'],
-                'dateJoined': 'Thu, 01 May 2025 07:00:00 GMT',
+                    'asdnzxpow8cx']
                 'email': 'example@divvy.com',
                 'name': 'a Name',
                 'onTimePct': '82',
@@ -67,7 +66,6 @@ def upsert_member_route(house_id):
             }
     """
     data = request.get_json()
-    # TODO: check to make sure the user exists already
     try:
         house_ref = HOUSES.document(house_id)
         member_id = data.get('id')
@@ -116,11 +114,8 @@ def upsert_chore_route(house_id):
 
 @app.route('/get-user-chores', methods=['POST'])
 def get_chore_by_user():
-    # TODO: rename choreID to id and all references of it
     """
-        Creates a new chore under a house in the database's house
-        collection. If the chore already exists, then non-empty fields
-        will be updated instead.
+        Get a list of a user's chore instances from their house in the database's house collection.
         Body:
         { "user_id": <user_id>, "house_id":  <house_id> }
         Request Example: Invoke-WebRequest -Uri http://127.0.0.1:5000/get-user-chores -Method Post -Headers @{'Content-Type'='application/json'} -Body '{ "user_id": "Iqha69gogtMJQuoWitSVgQFqI6V2", "house_id":  "ff76c4e3-64e7-4ca2-b4e6-0d7c700e05d4" }'
@@ -130,11 +125,8 @@ def get_chore_by_user():
 
 @app.route('/get-current-day-user-chores', methods=['POST'])
 def get_current_day_chore_by_user():
-    # TODO: rename choreID to id and all references of it
     """
-        Creates a new chore under a house in the database's house
-        collection. If the chore already exists, then non-empty fields
-        will be updated instead.
+        Get a list of a user's chore instances from their house in the database's house collection for today.
         Body:
         { "user_id": <user_id>, "house_id":  <house_id> }
         Request Example: Invoke-WebRequest -Uri http://127.0.0.1:5000/get-current-day-user-chores -Method Post -Headers @{'Content-Type'='application/json'} -Body '{ "user_id": "Iqha69gogtMJQuoWitSVgQFqI6V2", "house_id":  "ff76c4e3-64e7-4ca2-b4e6-0d7c700e05d4" }'
@@ -144,11 +136,8 @@ def get_current_day_chore_by_user():
 
 @app.route('/get-house-chores', methods=['POST'])
 def get_chore_by_house():
-    # TODO: rename choreID to id and all references of it
     """
-        Creates a new chore under a house in the database's house
-        collection. If the chore already exists, then non-empty fields
-        will be updated instead.
+        Get a list of the chores in a house.
         Body:
         {  "house_id":  <house_id> }
         Request Example: Invoke-WebRequest -Uri http://127.0.0.1:5000/get-house-chores -Method Post -Headers @{'Content-Type'='application/json'} -Body '{ "house_id":  "ff76c4e3-64e7-4ca2-b4e6-0d7c700e05d4" }'
@@ -168,7 +157,7 @@ def upsert_subgroup_route(house_id):
         house_ref = HOUSES.document(house_id)
         sub_ref = house_ref.collection('subgroups')
         sub_ref.document(data.get('id')).set(data)
-        return jsonify({'id': data.get('id')})              # TODO: implement jsonify on all returns for routes and add 400 code on error.
+        return jsonify({'id': data.get('id')})
     except Exception as e:
         return jsonify({'error': 'Subgroup could not be added'}), 400
     
@@ -215,7 +204,8 @@ def upsert_user_route():
         Request body example:
             {'email': 'example@gmail.com',
                 'houseID': 'alskdjfl',
-                'id': 'NisesS'
+                'id': 'NisesS',
+                'name': 'John'
             }
     """
     data = request.get_json()
@@ -227,10 +217,7 @@ def delete_user_route(user_id):
         Deletes a user in the database's user collection.
         The id field must be non-empty.
         Request body example:
-            {'email': 'example@gmail.com',
-                'houseID': 'alskdjfl',
-                'id': 'NisesS
-            }
+            {}
     """
     user_ref = USERS.document(user_id)
     user_ref.delete()
@@ -287,7 +274,7 @@ def delete_swap_route(house_id):
 @app.route('/delete-member-<house_id>', methods=['POST'])
 def delete_member_route(house_id):
     """
-        Deletes a memb er in the database's house collection.
+        Deletes a member in the database's house collection.
         The id field must be non-empty.
     """
     data = request.get_json()
@@ -345,7 +332,7 @@ def get_house_route(house_id):
 def get_house_join_route(join_code):
     """
         Retrieves a house document from the database's houses collection with
-        the matching join code
+        the matching join code.
     """
     house_query = HOUSES.where(filter=FieldFilter("joinCode", "==", join_code))
     house_docs = house_query.get()
@@ -357,7 +344,7 @@ def get_house_join_route(join_code):
 @app.route('/get-user-<user_id>', methods=['GET'])
 def get_user_route(user_id):
     """
-        Retrieves a user's house from the database's users collection.
+        Retrieves a user's document from the database's users collection.
         If the user ID does not exist in the database, returns None.
     """
     user_ref = USERS.document(user_id)
@@ -461,7 +448,7 @@ def get_house_subgroups_routes(house_id):
 @app.route('/get-house-<house_id>-subgroup-<subgroup_id>', methods=['GET'])
 def get_house_subgroup_route(house_id, subgroup_id):
     """
-        Retrieves a subgroup from a house
+        Retrieves a subgroup from a house.
         Returns None if house_id or subgroup_id is not in the database. 
     """
 
@@ -484,22 +471,3 @@ def get_house_subgroup_route(house_id, subgroup_id):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
-
-# TODO: Implement a variation of the below to handle errors.
-# # Initialize Firebase
-# if initialize_firebase():
-#     db = get_firestore_db()
-#     app.config['FIRESTORE_DB'] = db 
-# else:
-#     print("Failed to initialize Firebase.  Application may not function correctly.")
-
-
-# @app.route('/')
-# def hello():
-#     return "Hello, Divvy App Gateway!"
-
-
-# if __name__ == '__main__':
-#     port = int(os.environ.get('PORT', 5000))
-#     app.run(host='0.0.0.0', port=port, debug=True)
