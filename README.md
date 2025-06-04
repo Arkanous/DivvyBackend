@@ -1,6 +1,6 @@
 # Divvy Backend - Chore Division App
 
-This is the backend service for Divvy, a chore division application. It's built using Flask and interacts with a Firestore database. The application is structured into three main services (tentative):
+This is the backend service for Divvy, a chore division application. It's built using Flask and interacts with a Firestore database. It also provides API endpoints through which the frontend communicates. The application is structured into three main services:
 
 - **User Service:** Manages user data.
 - **House Service:** Manages house/household data and member assignments.
@@ -55,8 +55,6 @@ Before you begin, ensure you have the following installed:
 
 ## Configuration
 
-**NOTE: This section was recently updated. If you had previously been instructed to skip it, please follow it now.**
-
 The application requires a Firebase Admin SDK service account credentials file.
 
 1.  **Obtain Firebase Admin SDK credentials:**
@@ -98,14 +96,15 @@ DivvyBackend/
 │   │   ├── __init__.py  
 │   │   └── firebase_utils.py  # Utility for Firebase database operations  
 │   │   └── firebaseUtilsTests.py # Unit tests for userService  
-│   └── app.py                  # The main application entry point and API routes  
+│   ├── app.py                  # The main application entry point and API routes  
+│   └── firebase-auth.json      # The private key through which Firebase is accessed (stored locally, not in repo)    
 ├── .gitignore                  # Files and directories to be ignored by Git  
 ├── requirements.txt            # Python dependencies  
 └── README.md                   # This README file  
 
 ## Running the System
 
-1.  **Run the Flask application:** (Without env)
+1.  **Run the Flask application:** (without env)
 
     ```bash
     cd ./src
@@ -361,7 +360,7 @@ POST /add-house
 - Response: {'id': <house_id>}
 
 POST /delete-house-<house_id>
-- Deletes a house in the database's House collection. Deletes all subcollections within. The id field must be non-empty.
+- Deletes a house in the database's houses collection. Deletes all subcollections within. The id field must be non-empty.
 - Example:
   curl -X POST -H "Content-Type: application/json" -d '{}' http://127.0.0.1:5000/delete-house-<house_id>
 - Request Body: {}
@@ -463,4 +462,4 @@ http://[server ip]:5000
 ```
 
 ## Questions?
-If you have questions, concerns, comments, or other queries, please feel free to contact acsparks@uw.edu
+If you have questions, concerns, comments, or other queries, please feel free to contact acsparks@uw.edu.
